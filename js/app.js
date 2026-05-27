@@ -92,8 +92,45 @@ function init() {
 }
 
 function setDefaultDates() {
-  // Get today's real date
-  const today = new Date();
+  // Get local date parts directly
+  const now = new Date();
+  const Y = now.getFullYear();
+  const M = now.getMonth();    // 0 = Jan
+  const D = now.getDate();
+
+  // Depart = today + 7 days (using local date constructor)
+  const d1 = new Date(Y, M, D + 7);
+  const d2 = new Date(Y, M, D + 14);
+  const d0 = new Date(Y, M, D);
+
+  // Format to YYYY-MM-DD
+  const fmt = (d) => {
+    const yy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yy}-${mm}-${dd}`;
+  };
+
+  const todayStr  = fmt(d0);
+  const departStr = fmt(d1);
+  const returnStr = fmt(d2);
+
+  // Set HTML input values
+  dom.departDate.min   = todayStr;
+  dom.returnDate.min   = todayStr;
+  dom.departDate.value = departStr;
+  dom.returnDate.value = returnStr;
+
+  // Update state
+  state.departDate = departStr;
+  state.returnDate = returnStr;
+
+  console.log('✅ Dates initialized:',
+    'today =', todayStr,
+    '| depart =', departStr,
+    '| return =', returnStr
+  );
+}
 
   // Depart = 7 days from today
   const depart = new Date(today);
