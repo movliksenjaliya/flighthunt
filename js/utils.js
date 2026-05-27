@@ -278,16 +278,24 @@ function buildMomondoUrl(p) {
 // =============================================
 // DATE HELPERS
 // =============================================
-
 function formatDateYMD(dateStr) {
   if (!dateStr) return '';
+
+  // If already in YYYY-MM-DD format just return it
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr;
+  }
+
   const d = new Date(dateStr);
   if (isNaN(d)) return '';
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
+
+  // Use LOCAL timezone to avoid date shifting
+  const y   = d.getFullYear();
+  const m   = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
 }
+
 
 function formatDateDisplay(dateStr) {
   if (!dateStr) return '';
@@ -300,7 +308,11 @@ function formatDateDisplay(dateStr) {
 function addDays(dateStr, days) {
   const d = new Date(dateStr);
   d.setDate(d.getDate() + days);
-  return formatDateYMD(d.toISOString().slice(0, 10));
+  // Use LOCAL date to avoid timezone shifts
+  const y   = d.getFullYear();
+  const m   = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function formatDuration(minutes) {
