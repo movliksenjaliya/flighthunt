@@ -92,22 +92,42 @@ function init() {
 }
 
 function setDefaultDates() {
-  const today    = new Date();
-  const nextWeek = new Date(today);
-  nextWeek.setDate(today.getDate() + 7);
-  const twoWeeks = new Date(today);
-  twoWeeks.setDate(today.getDate() + 14);
+  // Get today's real date
+  const today = new Date();
 
-  const fmt = d => d.toISOString().slice(0, 10);
-  const min = fmt(today);
+  // Depart = 7 days from today
+  const depart = new Date(today);
+  depart.setDate(today.getDate() + 7);
 
-  dom.departDate.min = min;
-  dom.returnDate.min = min;
-  dom.departDate.value = fmt(nextWeek);
-  dom.returnDate.value = fmt(twoWeeks);
+  // Return = 14 days from today
+  const ret = new Date(today);
+  ret.setDate(today.getDate() + 14);
 
-  state.departDate = fmt(nextWeek);
-  state.returnDate = fmt(twoWeeks);
+  // Format as YYYY-MM-DD using LOCAL date not UTC
+  function toLocalYMD(d) {
+    const y  = d.getFullYear();
+    const m  = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  const todayStr  = toLocalYMD(today);
+  const departStr = toLocalYMD(depart);
+  const retStr    = toLocalYMD(ret);
+
+  // Set minimum selectable date to today
+  dom.departDate.min = todayStr;
+  dom.returnDate.min = todayStr;
+
+  // Set default values
+  dom.departDate.value = departStr;
+  dom.returnDate.value = retStr;
+
+  // Save to state
+  state.departDate = departStr;
+  state.returnDate = retStr;
+
+  console.log('Dates set:', departStr, retStr);
 }
 
 function loadSavedState() {
@@ -168,19 +188,23 @@ function attachEventListeners() {
 
   // ---- Date changes ----
   dom.departDate.addEventListener('change', (e) => {
-    state.departDate = e.target.value;
-    // Ensure return date is after depart date
-    if (state.returnDate && state.returnDate <= e.target.value) {
-      const next = addDays(e.target.value, 7);
-      dom.returnDate.value = next;
-      state.returnDate = next;
-    }
-    dom.returnDate.min = e.target.value;
-  });
+  const picked = e.target.value;
+  state.departDate = picked;
 
-  dom.returnDate.addEventListener('change', (e) => {
-    state.returnDate = e.target.value;
-  });
+  // Auto-update return date if it's before depart date
+  if (state.tripType === 'roundtrip') {
+    if (!state.returnDate || state.returnDate <= picked) {
+      const autoReturn = addDays(picked, 7);
+      dom.returnDate.value = autoReturn;
+      state.returnDate     = autoReturn;
+    }
+    dom.returnDate.min = picked;
+  }
+});
+
+dom.returnDate.addEventListener('change', (e) => {
+  state.returnDate = e.target.value;
+});
 
   // ---- Passengers ----
   document.querySelectorAll('.count-btn').forEach(btn => {
