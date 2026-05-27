@@ -491,25 +491,11 @@ function handleSearchProgress(event) {
 function renderResults() {
   let filtered = [...state.results];
 
-  // Apply stops filter
-  if (state.maxStops !== 'any') {
-    const maxS = parseInt(state.maxStops);
-    filtered = filtered.filter(r => r.stops <= maxS);
-  }
-
-  // Apply sort
-  filtered.sort((a, b) => {
-    if (state.sortBy === 'price')    return a.price    - b.price;
-    if (state.sortBy === 'duration') return a.duration - b.duration;
-    if (state.sortBy === 'stops')    return a.stops    - b.stops;
-    return 0;
-  });
-
   if (!filtered.length) {
     dom.resultsGrid.innerHTML = `
       <div style="text-align:center;padding:2rem;color:var(--text-muted);">
         <i class="fas fa-search" style="font-size:2rem;margin-bottom:0.8rem;display:block;"></i>
-        No flights found. Try adjusting your filters.
+        No results. Try searching again.
       </div>`;
     return;
   }
@@ -518,21 +504,12 @@ function renderResults() {
     renderResultCard(r, idx)
   ).join('');
 
-  // Attach book button handlers
   dom.resultsGrid.querySelectorAll('.book-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const url  = btn.dataset.url;
+      const url  = decodeURIComponent(btn.dataset.url);
       const name = btn.dataset.site;
       openBookingModal(url, name);
-    });
-  });
-
-  // Card click = expand (future feature placeholder)
-  dom.resultsGrid.querySelectorAll('.result-card').forEach(card => {
-    card.addEventListener('click', (e) => {
-      if (e.target.closest('.book-btn')) return;
-      // Toggle expanded view (future enhancement)
     });
   });
 }
@@ -541,75 +518,97 @@ function renderResults() {
 // RESULT CARD HTML
 // =============================================
 
-function renderResultCard(r, idx) {
-  const stopLabel  = r.stops === 0 ? 'Direct' : `${r.stops} stop${r.stops > 1 ? 's' : ''}`;
-  const durLabel   = formatDuration(r.duration);
-  const bagLabel   = r.includedBags > 0
-    ? `<i class="fas fa-suitcase-rolling"></i> Bag included`
-    : `<i class="fas fa-times-circle"></i> No checked bag`;
-  const badgeHTML  = r.isLowest
-    ? `<span class="best-badge">🏆 Best Price</span>` : '';
+// =============================================
+// RESULT CARD — shows search links not fake prices
+// =============================================
 
-  const logoUrl = `https://content.airhex.com/content/logos/airlines_${r.airlineCode}_35_35_s.png`;
+function renderResultCard(r, idx) {
+  const params = r.params || {};
+  const adults   = params.adults   || 1;
+  const children = params.children || 0;
+  const totalPax = adults + children;
+
+  const siteDescriptions = {
+    google_flights: 'Search across all airlines. See real prices, filter by stops, dates, airline. Best overall.',
+    skyscanner:     'Compare prices from 100s of airlines and travel agents. Great price alerts.',
+    kayak:          'Compares hundreds of travel sites at once. Has price forecast feature.',
+    kiwi:           'Finds cheapest combinations. Great for flexible travel dates.',
+    expedia:        'Book flights + hotel together for better deals.',
+    momondo:        'Finds hidden deals from smaller booking sites.',
+  };
+
+  const desc = siteDescriptions[r.sourceId] || 'Compare flight prices';
 
   return `
-    <div class="result-card ${r.isLowest ? 'best-deal' : ''}">
-      ${badgeHTML}
-
-      <div class="flight-info">
-        <div class="airline-row">
-          <img
-            class="airline-logo"
-            src="${logoUrl}"
-            alt="${r.airline}"
-            onerror="this.style.display='none'"
-          />
-          <span class="airline-name">${r.airline}</span>
-          <span class="source-badge">
-            ${r.sourceIcon || ''} ${r.source}
-          </span>
-          <span style="font-size:0.72rem;color:var(--text-muted);">
-            ${r.flightNumber}
-          </span>
-        </div>
-
-        <div class="times-row">
-          <span class="dep-time">${r.depTime}</span>
-          <span style="font-size:0.8rem;color:var(--text-muted);">${r.depAirport}</span>
-
-          <div class="flight-line">
-            <span class="stops-info">${stopLabel}</span>
-            <div class="stops-line"></div>
-            <span class="duration-text">${durLabel}</span>
+    <div class="result-card site-card">
+      <div class="site-card-left">
+        <div class="site-icon-name">
+          <span class="site-icon" style="font-size:1.5rem">${r.sourceIcon}</span>
+          <div>
+            <div class="site-name" style="font-weight:700;font-size:1rem;">
+              ${r.source}
+            </div>
+            <div class="site-note" style="font-size:0.75rem;color:var(--text-muted);">
+              ${r.sourceNote || ''}
+            </div>
           </div>
-
-          <span style="font-size:0.8rem;color:var(--text-muted);">${r.arrAirport}</span>
-          <span class="arr-time">${r.arrTime}</span>
         </div>
-
-        <div class="baggage-tag">${bagLabel}</div>
+        <div class="site-desc" style="
+          font-size:0.8rem;
+          color:var(--text-secondary);
+          margin-top:0.5rem;
+          line-height:1.5;
+        ">
+          ${desc}
+        </div>
+        <div style="
+          margin-top:0.6rem;
+          font-size:0.75rem;
+          color:var(--text-muted);
+          display:flex;
+          gap:1rem;
+          flex-wrap:wrap;
+        ">
+          <span>✈ ${params.origin || ''} → ${params.destination || ''}</span>
+          <span>📅 ${formatDateDisplay(params.departDate)}</span>
+          <span>👤 ${totalPax} passenger${totalPax > 1 ? 's' : ''}</span>
+          ${params.tripType === 'roundtrip'
+            ? `<span>🔄 Return: ${formatDateDisplay(params.returnDate)}</span>`
+            : '<span>➡ One way</span>'
+          }
+        </div>
       </div>
 
-      <div class="price-section">
-        <span class="price-main">${formatEUR(r.price)}</span>
-        <span class="price-per">per person</span>
-        ${r.totalPrice && r.totalPrice !== r.price
-          ? `<span class="price-original">Total: ${formatEUR(r.totalPrice)}</span>`
-          : ''}
+      <div class="site-card-right">
+        <div style="
+          font-size:0.75rem;
+          color:var(--text-muted);
+          text-align:center;
+          margin-bottom:0.5rem;
+        ">
+          Opens with your<br/>search pre-filled
+        </div>
+        <button
+          class="book-btn"
+          data-url="${encodeURIComponent(r.bookingUrl)}"
+          data-site="${r.source}"
+          style="background:${r.sourceColor || 'var(--accent)'}"
+        >
+          <i class="fas fa-external-link-alt"></i>
+          Search on ${r.source}
+        </button>
+        <div style="
+          font-size:0.68rem;
+          color:var(--text-muted);
+          text-align:center;
+          margin-top:0.4rem;
+        ">
+          🔒 Opens privately
+        </div>
       </div>
-
-      <button
-        class="book-btn"
-        data-url="${encodeURIComponent(r.bookingUrl)}"
-        data-site="${r.source}"
-      >
-        <i class="fas fa-external-link-alt"></i>
-        Book on ${r.source}
-      </button>
     </div>
   `;
 }
-
 // =============================================
 // BOOKING MODAL
 // =============================================
