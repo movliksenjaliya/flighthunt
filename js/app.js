@@ -439,12 +439,21 @@ async function handleSearch(e) {
   // Disable search button
   dom.searchBtn.classList.add('loading');
   dom.searchBtn.querySelector('span').textContent = 'Searching...';
-
+// Read dates DIRECTLY from the form inputs
+// This avoids any state sync issues
+  const rawDepart = dom.departDate.value;
+  const rawReturn = dom.returnDate.value;
+  
+  console.log('Search dates from form:',
+    'depart =', rawDepart,
+    'return =', rawReturn
+  );
+  
   const searchParams = {
     origin:         state.origin,
     destination:    state.destination,
-    departDate:     state.departDate,
-    returnDate:     state.tripType === 'roundtrip' ? state.returnDate : null,
+    departDate:     rawDepart,
+    returnDate:     state.tripType === 'roundtrip' ? rawReturn : null,
     adults:         state.adults,
     children:       state.children,
     cabinClass:     state.cabinClass,
@@ -452,6 +461,7 @@ async function handleSearch(e) {
     directOnly:     state.directOnly,
     checkedBaggage: state.checkedBaggage,
   };
+
 
   try {
     const results = await searchFlights(searchParams, handleSearchProgress);
