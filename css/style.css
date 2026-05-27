@@ -1117,3 +1117,41 @@ body {
   .radio-pill span { padding: 0.35rem 0.7rem; font-size: 0.78rem; }
   .search-card { padding: 1rem; }
 }
+/* ---- SITE SEARCH CARDS ---- */
+.site-card {
+  grid-template-columns: 1fr auto !important;
+  gap: 1rem;
+  align-items: center;
+}
+
+.site-card-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.site-icon-name {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.site-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 160px;
+}
+
+@media (max-width: 600px) {
+  .site-card {
+    grid-template-columns: 1fr !important;
+  }
+  .site-card-right {
+    width: 100%;
+  }
+  .site-card-right .book-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
