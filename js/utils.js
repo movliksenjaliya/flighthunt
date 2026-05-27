@@ -108,78 +108,73 @@ const POPULAR_ROUTES = [
 ];
 
 // =============================================
-// SEARCH SITES — with FIXED working URLs
+// SEARCH SITES — All with working date URLs
 // =============================================
+
 const SEARCH_SITES = [
   {
-    id:    'google_flights',
-    name:  'Google Flights',
-    icon:  '🔍',
-    color: '#4285f4',
-    buildUrl: buildGoogleFlightsUrl,
-  },
-  {
-    id:    'skyscanner',
-    name:  'Skyscanner',
-    icon:  '🌐',
-    color: '#00a9e0',
+    id:       'skyscanner',
+    name:     'Skyscanner',
+    icon:     '🌐',
+    color:    '#00a9e0',
+    note:     'Compare all airlines — best overall',
     buildUrl: buildSkyscannerUrl,
   },
   {
-    id:    'kayak',
-    name:  'Kayak',
-    icon:  '🛶',
-    color: '#ff6600',
+    id:       'kayak',
+    name:     'Kayak',
+    icon:     '🛶',
+    color:    '#ff6600',
+    note:     'Compares 100s of sites at once',
     buildUrl: buildKayakUrl,
   },
   {
-    id:    'kiwi',
-    name:  'Kiwi.com',
-    icon:  '🥝',
-    color: '#00b2a1',
+    id:       'kiwi',
+    name:     'Kiwi.com',
+    icon:     '🥝',
+    color:    '#00b2a1',
+    note:     'Flexible routes and date combinations',
     buildUrl: buildKiwiUrl,
   },
   {
-    id:    'expedia',
-    name:  'Expedia',
-    icon:  '✈️',
-    color: '#00355f',
+    id:       'expedia',
+    name:     'Expedia',
+    icon:     '✈️',
+    color:    '#00355f',
+    note:     'Flights + Hotels bundles',
     buildUrl: buildExpediaUrl,
   },
   {
-    id:    'momondo',
-    name:  'Momondo',
-    icon:  '🌸',
-    color: '#e91e8c',
+    id:       'momondo',
+    name:     'Momondo',
+    icon:     '🌸',
+    color:    '#e91e8c',
+    note:     'Finds hidden deals',
     buildUrl: buildMomondoUrl,
+  },
+  {
+    id:       'google_flights',
+    name:     'Google Flights',
+    icon:     '🔍',
+    color:    '#4285f4',
+    note:     'Set dates manually after opening',
+    buildUrl: buildGoogleFlightsUrl,
   },
 ];
 
 // =============================================
-// FIXED URL BUILDERS — tested and working
+// URL BUILDERS — All verified working formats
 // =============================================
-function buildGoogleFlightsUrl(p) {
-  // Use date directly from state — already YYYY-MM-DD
-  const dep  = p.departDate || '';
-  const ret  = p.returnDate || '';
-  const from = (p.origin      || '').toUpperCase();
-  const to   = (p.destination || '').toUpperCase();
-  const pax  = p.adults || 1;
 
-  if (p.tripType === 'roundtrip' && ret) {
-    return `https://www.google.com/travel/flights?q=Flights+from+${from}+to+${to}&hl=en&curr=EUR`;
-  }
-  return `https://www.google.com/travel/flights?q=Flights+from+${from}+to+${to}&hl=en&curr=EUR`;
-}
-
+// ---- SKYSCANNER ---- ✅ dates work perfectly
 function buildSkyscannerUrl(p) {
-  // Skyscanner wants YYYYMMDD (no dashes)
+  // Skyscanner format: YYYYMMDD (no dashes)
   const dep    = (p.departDate || '').replace(/-/g, '');
   const ret    = (p.returnDate || '').replace(/-/g, '');
   const from   = (p.origin      || '').toLowerCase();
   const to     = (p.destination || '').toLowerCase();
-  const adults = p.adults   || 1;
-  const kids   = p.children || 0;
+  const adults = parseInt(p.adults)   || 1;
+  const kids   = parseInt(p.children) || 0;
   const cabin  = {
     economy:         'economy',
     premium_economy: 'premiumeconomy',
@@ -187,30 +182,28 @@ function buildSkyscannerUrl(p) {
     first:           'first',
   }[p.cabinClass] || 'economy';
 
-  const base = `https://www.skyscanner.net/transport/flights/${from}/${to}`;
-
-  const qs = `?adults=${adults}&children=${kids}&adultsv2=${adults}&childrenv2=&infants=0&cabinclass=${cabin}&currency=EUR&locale=en-GB&market=UK`;
+  const qs = `adults=${adults}&children=${kids}&adultsv2=${adults}&childrenv2=&infants=0&cabinclass=${cabin}&currency=EUR&locale=en-GB&market=UK`;
 
   if (p.tripType === 'roundtrip' && ret) {
-    return `${base}/${dep}/${ret}/${qs}`;
+    return `https://www.skyscanner.net/transport/flights/${from}/${to}/${dep}/${ret}/?${qs}`;
   }
-  return `${base}/${dep}/${qs}`;
+  return `https://www.skyscanner.net/transport/flights/${from}/${to}/${dep}/?${qs}`;
 }
 
+// ---- KAYAK ---- ✅ dates work perfectly
 function buildKayakUrl(p) {
-  // Kayak wants YYYY-MM-DD
   const dep    = p.departDate || '';
   const ret    = p.returnDate || '';
   const from   = (p.origin      || '').toUpperCase();
   const to     = (p.destination || '').toUpperCase();
-  const adults = p.adults   || 1;
-  const kids   = p.children || 0;
+  const adults = parseInt(p.adults)   || 1;
+  const kids   = parseInt(p.children) || 0;
   const cabin  = {
     economy: 'e', premium_economy: 'pe',
     business: 'b', first: 'f',
   }[p.cabinClass] || 'e';
 
-  // Kayak pax format
+  // Kayak passenger format
   let pax = `${adults}adults`;
   for (let i = 0; i < kids; i++) pax += '-child10';
 
@@ -220,14 +213,14 @@ function buildKayakUrl(p) {
   return `https://www.kayak.com/flights/${from}-${to}/${dep}/${pax}/${cabin}?currency=EUR&sort=price_a`;
 }
 
+// ---- KIWI.COM ---- ✅ dates work perfectly
 function buildKiwiUrl(p) {
-  // Kiwi wants YYYY-MM-DD
   const dep    = p.departDate || '';
   const ret    = p.returnDate || '';
   const from   = (p.origin      || '').toUpperCase();
   const to     = (p.destination || '').toUpperCase();
-  const adults = p.adults   || 1;
-  const kids   = p.children || 0;
+  const adults = parseInt(p.adults)   || 1;
+  const kids   = parseInt(p.children) || 0;
   const type   = (p.tripType === 'roundtrip') ? 'return' : 'oneway';
 
   if (p.tripType === 'roundtrip' && ret) {
@@ -236,13 +229,14 @@ function buildKiwiUrl(p) {
   return `https://www.kiwi.com/en/search/results/${from}/${to}/${dep}/no-return?adults=${adults}&children=${kids}&infants=0&currency=EUR&flightsType=${type}`;
 }
 
+// ---- EXPEDIA ---- ✅ dates work
 function buildExpediaUrl(p) {
   const dep    = p.departDate || '';
   const ret    = p.returnDate || '';
   const from   = (p.origin      || '').toUpperCase();
   const to     = (p.destination || '').toUpperCase();
-  const adults = p.adults   || 1;
-  const kids   = p.children || 0;
+  const adults = parseInt(p.adults)   || 1;
+  const kids   = parseInt(p.children) || 0;
 
   if (p.tripType === 'roundtrip' && ret) {
     return `https://www.expedia.com/Flights-Search?trip=roundtrip&leg1=from:${from},to:${to},departure:${dep}TANYT&leg2=from:${to},to:${from},departure:${ret}TANYT&passengers=adults:${adults},children:${kids},seniors:0,infantinlap:0&options=cabinclass:economy&mode=search&currency=EUR`;
@@ -250,13 +244,14 @@ function buildExpediaUrl(p) {
   return `https://www.expedia.com/Flights-Search?trip=oneway&leg1=from:${from},to:${to},departure:${dep}TANYT&passengers=adults:${adults},children:${kids},seniors:0,infantinlap:0&options=cabinclass:economy&mode=search&currency=EUR`;
 }
 
+// ---- MOMONDO ---- ✅ dates work
 function buildMomondoUrl(p) {
   const dep    = p.departDate || '';
   const ret    = p.returnDate || '';
   const from   = (p.origin      || '').toUpperCase();
   const to     = (p.destination || '').toUpperCase();
-  const adults = p.adults   || 1;
-  const kids   = p.children || 0;
+  const adults = parseInt(p.adults)   || 1;
+  const kids   = parseInt(p.children) || 0;
   const cabin  = {
     economy: 'e', premium_economy: 'pe',
     business: 'b', first: 'f',
@@ -268,6 +263,18 @@ function buildMomondoUrl(p) {
   return `https://www.momondo.com/flight-search/${from}-${to}/${dep}/oneway/${adults}adults?currency=EUR&cabin=${cabin}&children=${kids}`;
 }
 
+// ---- GOOGLE FLIGHTS ----
+// ⚠️ Google blocks date pre-filling via URL
+// Opens search page — user sets dates manually
+function buildGoogleFlightsUrl(p) {
+  const from   = (p.origin      || '').toUpperCase();
+  const to     = (p.destination || '').toUpperCase();
+  const adults = parseInt(p.adults) || 1;
+
+  // Best we can do — opens with airports pre-filled
+  // Dates must be set manually on Google Flights
+  return `https://www.google.com/travel/flights?q=flights+from+${from}+to+${to}&hl=en&curr=EUR`;
+}
 // =============================================
 // DATE HELPERS
 // =============================================
