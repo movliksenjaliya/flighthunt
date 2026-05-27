@@ -263,19 +263,34 @@ function buildMomondoUrl(p) {
   return `https://www.momondo.com/flight-search/${from}-${to}/${dep}/oneway/${adults}adults?currency=EUR&cabin=${cabin}&children=${kids}`;
 }
 
-// ---- GOOGLE FLIGHTS ----
-// ⚠️ Google blocks date pre-filling via URL
-// Opens search page — user sets dates manually
 function buildGoogleFlightsUrl(p) {
   const from   = (p.origin      || '').toUpperCase();
   const to     = (p.destination || '').toUpperCase();
-  const adults = parseInt(p.adults) || 1;
+  const dep    = p.departDate || '';
+  const ret    = p.returnDate || '';
+  const adults = parseInt(p.adults)   || 1;
+  const kids   = parseInt(p.children) || 0;
+  const isRT   = p.tripType === 'roundtrip' && ret;
 
-  // Best we can do — opens with airports pre-filled
-  // Dates must be set manually on Google Flights
-  return `https://www.google.com/travel/flights?q=flights+from+${from}+to+${to}&hl=en&curr=EUR`;
+  // This hash format is what Google uses internally
+  // Format: #flt=FROM.TO.YYYY-MM-DD
+  // It reliably pre-fills dates in Google Flights
+
+  const base = 'https://www.google.com/travel/flights';
+  const params = `hl=en&curr=EUR`;
+
+  if (isRT) {
+    // Round trip hash format
+    const hash = `flt=${from}.${to}.${dep}*${to}.${from}.${ret};c:EUR;e:1;sd:1;t:f;tt:o`;
+    return `${base}?${params}#${hash}`;
+  }
+
+  // One way hash format
+  const hash = `flt=${from}.${to}.${dep};c:EUR;e:1;sd:1;t:f;tt:o`;
+  return `${base}?${params}#${hash}`;
 }
-// =============================================
+
+===========================================
 // DATE HELPERS
 // =============================================
 // Get YYYY-MM-DD from a date string or Date object
