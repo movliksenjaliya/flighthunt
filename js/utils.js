@@ -158,175 +158,200 @@ const SEARCH_SITES = [
 // =============================================
 // FIXED URL BUILDERS — tested and working
 // =============================================
-
-// ---- GOOGLE FLIGHTS ---- works perfectly
 function buildGoogleFlightsUrl(p) {
-  const dep = formatDateYMD(p.departDate);
-  const adults   = p.adults   || 1;
-  const children = p.children || 0;
+  // Use date directly from state — already YYYY-MM-DD
+  const dep  = p.departDate || '';
+  const ret  = p.returnDate || '';
+  const from = (p.origin      || '').toUpperCase();
+  const to   = (p.destination || '').toUpperCase();
+  const pax  = p.adults || 1;
 
-  // Build passenger string: 1 adult = just blank, 2 adults = ,a
-  let pax = '';
-  for (let i = 0; i < adults;   i++) pax += 'a';
-  for (let i = 0; i < children; i++) pax += 'c';
-
-  const cabinMap = {
-    economy: '1', premium_economy: '2', business: '3', first: '4'
-  };
-  const cabin = cabinMap[p.cabinClass] || '1';
-
-  if (p.tripType === 'roundtrip' && p.returnDate) {
-    const ret = formatDateYMD(p.returnDate);
-    return `https://www.google.com/travel/flights?q=flights+from+${p.origin}+to+${p.destination}&hl=en&curr=EUR`;
+  if (p.tripType === 'roundtrip' && ret) {
+    return `https://www.google.com/travel/flights?q=Flights+from+${from}+to+${to}&hl=en&curr=EUR`;
   }
-
-  return `https://www.google.com/travel/flights?q=flights+from+${p.origin}+to+${p.destination}+on+${dep}&hl=en&curr=EUR`;
+  return `https://www.google.com/travel/flights?q=Flights+from+${from}+to+${to}&hl=en&curr=EUR`;
 }
 
-// ---- SKYSCANNER ---- working deep link format
 function buildSkyscannerUrl(p) {
-  const dep      = formatDateYMD(p.departDate).replace(/-/g, '');
-  const adults   = p.adults   || 1;
-  const children = p.children || 0;
-  const cabin    = { economy:'economy', premium_economy:'premiumeconomy', business:'business', first:'first' }[p.cabinClass] || 'economy';
+  // Skyscanner wants YYYYMMDD (no dashes)
+  const dep    = (p.departDate || '').replace(/-/g, '');
+  const ret    = (p.returnDate || '').replace(/-/g, '');
+  const from   = (p.origin      || '').toLowerCase();
+  const to     = (p.destination || '').toLowerCase();
+  const adults = p.adults   || 1;
+  const kids   = p.children || 0;
+  const cabin  = {
+    economy:         'economy',
+    premium_economy: 'premiumeconomy',
+    business:        'business',
+    first:           'first',
+  }[p.cabinClass] || 'economy';
 
-  const orig = p.origin.toLowerCase();
-  const dest = p.destination.toLowerCase();
+  const base = `https://www.skyscanner.net/transport/flights/${from}/${to}`;
 
-  // Build passenger part
-  let paxParts = [];
-  for (let i = 0; i < adults;   i++) paxParts.push('adult');
-  for (let i = 0; i < children; i++) paxParts.push('child~10');
+  const qs = `?adults=${adults}&children=${kids}&adultsv2=${adults}&childrenv2=&infants=0&cabinclass=${cabin}&currency=EUR&locale=en-GB&market=UK`;
 
-  const paxStr = paxParts.join('-');
-
-  if (p.tripType === 'roundtrip' && p.returnDate) {
-    const ret = formatDateYMD(p.returnDate).replace(/-/g, '');
-    return `https://www.skyscanner.net/transport/flights/${orig}/${dest}/${dep}/${ret}/?adults=${adults}&children=${children}&adultsv2=${adults}&childrenv2=&infants=0&cabinclass=${cabin}&currency=EUR&locale=en-GB&market=UK&preferDirects=false`;
+  if (p.tripType === 'roundtrip' && ret) {
+    return `${base}/${dep}/${ret}/${qs}`;
   }
-
-  return `https://www.skyscanner.net/transport/flights/${orig}/${dest}/${dep}/?adults=${adults}&children=${children}&adultsv2=${adults}&childrenv2=&infants=0&cabinclass=${cabin}&currency=EUR&locale=en-GB&market=UK&preferDirects=false`;
+  return `${base}/${dep}/${qs}`;
 }
 
-// ---- KAYAK ---- working format
 function buildKayakUrl(p) {
-  const dep    = formatDateYMD(p.departDate);
+  // Kayak wants YYYY-MM-DD
+  const dep    = p.departDate || '';
+  const ret    = p.returnDate || '';
+  const from   = (p.origin      || '').toUpperCase();
+  const to     = (p.destination || '').toUpperCase();
   const adults = p.adults   || 1;
   const kids   = p.children || 0;
-  const cabin  = { economy:'e', premium_economy:'pe', business:'b', first:'f' }[p.cabinClass] || 'e';
+  const cabin  = {
+    economy: 'e', premium_economy: 'pe',
+    business: 'b', first: 'f',
+  }[p.cabinClass] || 'e';
 
-  // Kayak pax format: adults-kidsAGE
+  // Kayak pax format
   let pax = `${adults}adults`;
-  if (kids > 0) {
-    for (let i = 0; i < kids; i++) pax += `-child10`;
-  }
+  for (let i = 0; i < kids; i++) pax += '-child10';
 
-  if (p.tripType === 'roundtrip' && p.returnDate) {
-    const ret = formatDateYMD(p.returnDate);
-    return `https://www.kayak.com/flights/${p.origin}-${p.destination}/${dep}/${ret}/${pax}/${cabin}?currency=EUR&sort=price_a`;
+  if (p.tripType === 'roundtrip' && ret) {
+    return `https://www.kayak.com/flights/${from}-${to}/${dep}/${ret}/${pax}/${cabin}?currency=EUR&sort=price_a`;
   }
-
-  return `https://www.kayak.com/flights/${p.origin}-${p.destination}/${dep}/${pax}/${cabin}?currency=EUR&sort=price_a`;
+  return `https://www.kayak.com/flights/${from}-${to}/${dep}/${pax}/${cabin}?currency=EUR&sort=price_a`;
 }
 
-// ---- KIWI.COM ---- FIXED format
 function buildKiwiUrl(p) {
-  const dep    = formatDateYMD(p.departDate);
+  // Kiwi wants YYYY-MM-DD
+  const dep    = p.departDate || '';
+  const ret    = p.returnDate || '';
+  const from   = (p.origin      || '').toUpperCase();
+  const to     = (p.destination || '').toUpperCase();
   const adults = p.adults   || 1;
   const kids   = p.children || 0;
+  const type   = (p.tripType === 'roundtrip') ? 'return' : 'oneway';
 
-  // Kiwi correct URL format
-  const type = p.tripType === 'roundtrip' ? 'return' : 'oneway';
-
-  if (p.tripType === 'roundtrip' && p.returnDate) {
-    const ret = formatDateYMD(p.returnDate);
-    return `https://www.kiwi.com/en/search/results/${p.origin.toLowerCase()}/${p.destination.toLowerCase()}/${dep}/${ret}?adults=${adults}&children=${kids}&infants=0&currency=EUR&flightsType=${type}`;
+  if (p.tripType === 'roundtrip' && ret) {
+    return `https://www.kiwi.com/en/search/results/${from}/${to}/${dep}/${ret}?adults=${adults}&children=${kids}&infants=0&currency=EUR&flightsType=${type}`;
   }
-
-  return `https://www.kiwi.com/en/search/results/${p.origin.toLowerCase()}/${p.destination.toLowerCase()}/${dep}/no-return?adults=${adults}&children=${kids}&infants=0&currency=EUR&flightsType=${type}`;
+  return `https://www.kiwi.com/en/search/results/${from}/${to}/${dep}/no-return?adults=${adults}&children=${kids}&infants=0&currency=EUR&flightsType=${type}`;
 }
 
-// ---- EXPEDIA ---- working format
 function buildExpediaUrl(p) {
-  const dep    = formatDateYMD(p.departDate);
+  const dep    = p.departDate || '';
+  const ret    = p.returnDate || '';
+  const from   = (p.origin      || '').toUpperCase();
+  const to     = (p.destination || '').toUpperCase();
   const adults = p.adults   || 1;
   const kids   = p.children || 0;
 
-  if (p.tripType === 'roundtrip' && p.returnDate) {
-    const ret = formatDateYMD(p.returnDate);
-    return `https://www.expedia.com/Flights-Search?trip=roundtrip&leg1=from:${p.origin},to:${p.destination},departure:${dep}TANYT&leg2=from:${p.destination},to:${p.origin},departure:${ret}TANYT&passengers=adults:${adults},children:${kids},seniors:0,infantinlap:0&options=cabinclass:economy&mode=search&currency=EUR`;
+  if (p.tripType === 'roundtrip' && ret) {
+    return `https://www.expedia.com/Flights-Search?trip=roundtrip&leg1=from:${from},to:${to},departure:${dep}TANYT&leg2=from:${to},to:${from},departure:${ret}TANYT&passengers=adults:${adults},children:${kids},seniors:0,infantinlap:0&options=cabinclass:economy&mode=search&currency=EUR`;
   }
-
-  return `https://www.expedia.com/Flights-Search?trip=oneway&leg1=from:${p.origin},to:${p.destination},departure:${dep}TANYT&passengers=adults:${adults},children:${kids},seniors:0,infantinlap:0&options=cabinclass:economy&mode=search&currency=EUR`;
+  return `https://www.expedia.com/Flights-Search?trip=oneway&leg1=from:${from},to:${to},departure:${dep}TANYT&passengers=adults:${adults},children:${kids},seniors:0,infantinlap:0&options=cabinclass:economy&mode=search&currency=EUR`;
 }
 
-// ---- MOMONDO ---- working format
 function buildMomondoUrl(p) {
-  const dep    = formatDateYMD(p.departDate);
+  const dep    = p.departDate || '';
+  const ret    = p.returnDate || '';
+  const from   = (p.origin      || '').toUpperCase();
+  const to     = (p.destination || '').toUpperCase();
   const adults = p.adults   || 1;
   const kids   = p.children || 0;
-  const cabin  = { economy:'e', premium_economy:'pe', business:'b', first:'f' }[p.cabinClass] || 'e';
+  const cabin  = {
+    economy: 'e', premium_economy: 'pe',
+    business: 'b', first: 'f',
+  }[p.cabinClass] || 'e';
 
-  if (p.tripType === 'roundtrip' && p.returnDate) {
-    const ret = formatDateYMD(p.returnDate);
-    return `https://www.momondo.com/flight-search/${p.origin}-${p.destination}/${dep}/${ret}/${adults}adults?currency=EUR&cabin=${cabin}&children=${kids}`;
+  if (p.tripType === 'roundtrip' && ret) {
+    return `https://www.momondo.com/flight-search/${from}-${to}/${dep}/${ret}/${adults}adults?currency=EUR&cabin=${cabin}&children=${kids}`;
   }
-
-  return `https://www.momondo.com/flight-search/${p.origin}-${p.destination}/${dep}/oneway/${adults}adults?currency=EUR&cabin=${cabin}&children=${kids}`;
+  return `https://www.momondo.com/flight-search/${from}-${to}/${dep}/oneway/${adults}adults?currency=EUR&cabin=${cabin}&children=${kids}`;
 }
 
 // =============================================
 // DATE HELPERS
 // =============================================
-function formatDateYMD(dateStr) {
-  if (!dateStr) return '';
+// Get YYYY-MM-DD from a date string or Date object
+// Never uses UTC — always local time
+function formatDateYMD(input) {
+  if (!input) return '';
 
-  // If already in YYYY-MM-DD format just return it
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    return dateStr;
+  // Already correct format YYYY-MM-DD
+  if (typeof input === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(input)) {
+    return input;
   }
 
-  const d = new Date(dateStr);
-  if (isNaN(d)) return '';
+  let d;
+  if (input instanceof Date) {
+    d = input;
+  } else {
+    // Parse YYYY-MM-DD string safely without timezone shift
+    if (typeof input === 'string' && input.includes('-')) {
+      const parts = input.split('-');
+      // new Date(year, month-1, day) = local time, no UTC shift
+      d = new Date(
+        parseInt(parts[0]),
+        parseInt(parts[1]) - 1,
+        parseInt(parts[2])
+      );
+    } else {
+      d = new Date(input);
+    }
+  }
 
-  // Use LOCAL timezone to avoid date shifting
+  if (!d || isNaN(d.getTime())) return '';
+
   const y   = d.getFullYear();
   const m   = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
 }
 
+// Add N days to a YYYY-MM-DD string
+function addDays(dateStr, days) {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  const d = new Date(
+    parseInt(parts[0]),
+    parseInt(parts[1]) - 1,
+    parseInt(parts[2]) + days  // add days here directly
+  );
+  const y   = d.getFullYear();
+  const m   = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
+// Display format: "15 Jun 2025"
 function formatDateDisplay(dateStr) {
   if (!dateStr) return '';
-  const d = new Date(dateStr);
+  const parts = dateStr.split('-');
+  const d = new Date(
+    parseInt(parts[0]),
+    parseInt(parts[1]) - 1,
+    parseInt(parts[2])
+  );
   return d.toLocaleDateString('en-GB', {
-    day: '2-digit', month: 'short', year: 'numeric'
+    day:   '2-digit',
+    month: 'short',
+    year:  'numeric',
   });
 }
 
-function addDays(dateStr, days) {
-  const d = new Date(dateStr);
-  d.setDate(d.getDate() + days);
-  // Use LOCAL date to avoid timezone shifts
-  const y   = d.getFullYear();
-  const m   = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
-function formatDuration(minutes) {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return `${h}h ${m > 0 ? m + 'm' : ''}`.trim();
-}
-
+// HH:MM + minutes = new HH:MM
 function minutesToTime(baseTime, addMinutes) {
   const [hh, mm] = baseTime.split(':').map(Number);
   const total = hh * 60 + mm + addMinutes;
   const h = Math.floor(total / 60) % 24;
   const m = total % 60;
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+// Minutes to "Xh Ym"
+function formatDuration(minutes) {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
 // =============================================
