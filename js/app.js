@@ -102,9 +102,10 @@ function setDefaultDates() {
   var M   = now.getMonth();
   var D   = now.getDate();
 
-  var d0  = new Date(Y, M, D);
-  var d1  = new Date(Y, M, D + 7);
-  var d2  = new Date(Y, M, D + 14);
+  // Depart = TODAY (not +7 days)
+  var d0 = new Date(Y, M, D);
+  // Return = TODAY + 7 days
+  var d1 = new Date(Y, M, D + 7);
 
   function fmt(d) {
     var yy = d.getFullYear();
@@ -114,18 +115,23 @@ function setDefaultDates() {
   }
 
   var todayStr  = fmt(d0);
-  var departStr = fmt(d1);
-  var returnStr = fmt(d2);
+  var returnStr = fmt(d1);
 
+  // Min date = today (cannot pick past dates)
   dom.departDate.min   = todayStr;
   dom.returnDate.min   = todayStr;
-  dom.departDate.value = departStr;
+
+  // Departure = TODAY
+  dom.departDate.value = todayStr;
+
+  // Return = today + 7 days
   dom.returnDate.value = returnStr;
 
-  state.departDate = departStr;
+  // Save to state
+  state.departDate = todayStr;
   state.returnDate = returnStr;
 
-  console.log('Dates → depart:', departStr, '| return:', returnStr);
+  console.log('Today:', todayStr, '| Return default:', returnStr);
 }
 
 // =============================================
