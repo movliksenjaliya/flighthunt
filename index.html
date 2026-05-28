@@ -1,307 +1,286 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="theme-color" content="#1a1a2e"/>
   <title>FlightHunt - Best Flight Prices</title>
   <link rel="manifest" href="manifest.json"/>
-
-  <!-- Font Awesome icons -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    crossorigin="anonymous"
-  />
-
-  <!-- CSS — using capital CSS to match your folder -->
-  <link rel="stylesheet" href="CSS/style.css"/>
-
-  <style>
-    /* Fallback inline critical styles in case CSS file fails */
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #0f0f1a;
-      color: #eaeaea;
-    }
-    .hidden { display: none !important; }
-  </style>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" 
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
 <body>
-<div id="app">
+  <div id="app">
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="logo">
-      <i class="fas fa-paper-plane"></i>
-      <span>FlightHunt</span>
-    </div>
-    <div class="header-actions">
-      <button id="darkToggle" title="Toggle theme">
-        <i class="fas fa-moon"></i>
-      </button>
-      <button id="installBtn" class="hidden" title="Install App">
-        <i class="fas fa-download"></i>
-      </button>
-    </div>
-  </header>
-
-  <!-- MAIN -->
-  <main class="main-container">
-
-    <!-- SEARCH CARD -->
-    <div class="search-card">
-
-      <!-- TRIP TYPE -->
-      <div class="trip-type-row">
-        <label class="radio-pill">
-          <input type="radio" name="tripType" value="roundtrip" checked/>
-          <span><i class="fas fa-exchange-alt"></i> Round Trip</span>
-        </label>
-        <label class="radio-pill">
-          <input type="radio" name="tripType" value="oneway"/>
-          <span><i class="fas fa-arrow-right"></i> One Way</span>
-        </label>
-        <label class="radio-pill">
-          <input type="radio" name="tripType" value="multicity"/>
-          <span><i class="fas fa-route"></i> Multi-City</span>
-        </label>
+    <!-- HEADER -->
+    <header class="header">
+      <div class="logo">
+        <i class="fas fa-paper-plane"></i>
+        <span>FlightHunt</span>
       </div>
+      <div class="header-actions">
+        <button id="darkToggle" title="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button id="installBtn" class="hidden" title="Install App">
+          <i class="fas fa-download"></i>
+        </button>
+      </div>
+    </header>
 
-      <!-- FORM -->
-      <form id="searchForm">
+    <!-- MAIN SEARCH CARD -->
+    <main class="main-container">
+      <div class="search-card">
 
-        <!-- AIRPORTS -->
-        <div class="airports-row">
-          <div class="input-group">
-            <label><i class="fas fa-plane-departure"></i> From</label>
-            <input
-              type="text"
-              id="origin"
-              placeholder="City or Airport (e.g. BER)"
-              autocomplete="off"
-            />
-            <div class="airport-dropdown hidden" id="originDropdown"></div>
-          </div>
-
-          <button type="button" id="swapBtn" class="swap-btn" title="Swap">
-            <i class="fas fa-exchange-alt"></i>
-          </button>
-
-          <div class="input-group">
-            <label><i class="fas fa-plane-arrival"></i> To</label>
-            <input
-              type="text"
-              id="destination"
-              placeholder="City or Airport (e.g. DEL)"
-              autocomplete="off"
-            />
-            <div class="airport-dropdown hidden" id="destDropdown"></div>
-          </div>
+        <!-- TRIP TYPE -->
+        <div class="trip-type-row">
+          <label class="radio-pill">
+            <input type="radio" name="tripType" value="roundtrip" checked/>
+            <span><i class="fas fa-exchange-alt"></i> Round Trip</span>
+          </label>
+          <label class="radio-pill">
+            <input type="radio" name="tripType" value="oneway"/>
+            <span><i class="fas fa-arrow-right"></i> One Way</span>
+          </label>
+          <label class="radio-pill">
+            <input type="radio" name="tripType" value="multicity"/>
+            <span><i class="fas fa-route"></i> Multi-City</span>
+          </label>
         </div>
 
-        <!-- DATES -->
-        <div class="dates-row">
-          <div class="input-group">
-            <label><i class="fas fa-calendar-alt"></i> Departure</label>
-            <input type="date" id="departDate"/>
-          </div>
-          <div class="input-group" id="returnDateGroup">
-            <label><i class="fas fa-calendar-check"></i> Return</label>
-            <input type="date" id="returnDate"/>
-          </div>
-        </div>
+        <!-- FLIGHT FORM -->
+        <form id="searchForm">
 
-        <!-- PASSENGERS + CLASS -->
-        <div class="extra-row">
-          <div class="input-group">
-            <label><i class="fas fa-users"></i> Passengers</label>
-            <div class="passenger-selector">
-              <div class="pax-item">
-                <span>Adults</span>
-                <div class="counter">
-                  <button type="button" class="count-btn"
-                    data-type="adults" data-action="minus">−</button>
-                  <span id="adultsCount">1</span>
-                  <button type="button" class="count-btn"
-                    data-type="adults" data-action="plus">+</button>
+          <!-- AIRPORTS ROW -->
+          <div class="airports-row">
+            <div class="input-group">
+              <label><i class="fas fa-plane-departure"></i> From</label>
+              <input type="text" id="origin" placeholder="City or Airport (e.g. BER)"
+                autocomplete="off" list="originSuggestions" required/>
+              <datalist id="originSuggestions"></datalist>
+              <div class="airport-dropdown hidden" id="originDropdown"></div>
+            </div>
+
+            <button type="button" id="swapBtn" class="swap-btn" title="Swap airports">
+              <i class="fas fa-exchange-alt"></i>
+            </button>
+
+            <div class="input-group">
+              <label><i class="fas fa-plane-arrival"></i> To</label>
+              <input type="text" id="destination" placeholder="City or Airport (e.g. DEL)"
+                autocomplete="off" list="destSuggestions" required/>
+              <datalist id="destSuggestions"></datalist>
+              <div class="airport-dropdown hidden" id="destDropdown"></div>
+            </div>
+          </div>
+
+          <!-- DATES ROW -->
+          <div class="dates-row">
+            <div class="input-group">
+              <label><i class="fas fa-calendar-alt"></i> Departure</label>
+              <input type="date" id="departDate" required/>
+            </div>
+            <div class="input-group" id="returnDateGroup">
+              <label><i class="fas fa-calendar-check"></i> Return</label>
+              <input type="date" id="returnDate"/>
+            </div>
+          </div>
+
+          <!-- PASSENGERS & CLASS ROW -->
+          <div class="extra-row">
+            <div class="input-group">
+              <label><i class="fas fa-users"></i> Passengers</label>
+              <div class="passenger-selector">
+                <div class="pax-item">
+                  <span>Adults</span>
+                  <div class="counter">
+                    <button type="button" class="count-btn" data-type="adults" data-action="minus">−</button>
+                    <span id="adultsCount">1</span>
+                    <button type="button" class="count-btn" data-type="adults" data-action="plus">+</button>
+                  </div>
+                </div>
+                <div class="pax-item">
+                  <span>Children</span>
+                  <div class="counter">
+                    <button type="button" class="count-btn" data-type="children" data-action="minus">−</button>
+                    <span id="childrenCount">0</span>
+                    <button type="button" class="count-btn" data-type="children" data-action="plus">+</button>
+                  </div>
                 </div>
               </div>
-              <div class="pax-item">
-                <span>Children</span>
-                <div class="counter">
-                  <button type="button" class="count-btn"
-                    data-type="children" data-action="minus">−</button>
-                  <span id="childrenCount">0</span>
-                  <button type="button" class="count-btn"
-                    data-type="children" data-action="plus">+</button>
-                </div>
+            </div>
+
+            <div class="input-group">
+              <label><i class="fas fa-chair"></i> Cabin Class</label>
+              <select id="cabinClass">
+                <option value="economy">Economy</option>
+                <option value="premium_economy">Premium Economy</option>
+                <option value="business">Business</option>
+                <option value="first">First Class</option>
+              </select>
+            </div>
+
+            <!-- LUGGAGE TOGGLE -->
+            <div class="input-group luggage-group">
+              <label><i class="fas fa-suitcase-rolling"></i> Options</label>
+              <div class="toggles">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="checkedBaggage"/>
+                  <span class="slider"></span>
+                  <span class="toggle-label">Checked Baggage</span>
+                </label>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="directOnly"/>
+                  <span class="slider"></span>
+                  <span class="toggle-label">Direct Flights Only</span>
+                </label>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="flexDates"/>
+                  <span class="slider"></span>
+                  <span class="toggle-label">Flexible Dates (±3 days)</span>
+                </label>
               </div>
             </div>
           </div>
 
-          <div class="input-group">
-            <label><i class="fas fa-chair"></i> Cabin Class</label>
-            <select id="cabinClass">
-              <option value="economy">Economy</option>
-              <option value="premium_economy">Premium Economy</option>
-              <option value="business">Business</option>
-              <option value="first">First Class</option>
+          <!-- SEARCH BUTTON -->
+          <button type="submit" class="search-btn" id="searchBtn">
+            <i class="fas fa-search"></i>
+            <span>Search All Sites (Private Mode)</span>
+          </button>
+
+          <!-- PRIVACY NOTICE -->
+          <div class="privacy-notice">
+            <i class="fas fa-user-secret"></i>
+            Searching in incognito mode • Cookies cleared • No tracking
+          </div>
+        </form>
+      </div>
+
+      <!-- PRICE ALERT SECTION -->
+      <div class="alert-section">
+        <h3><i class="fas fa-bell"></i> Price Alerts</h3>
+        <div class="alert-form">
+          <input type="email" id="alertEmail" placeholder="your@email.com"/>
+          <input type="number" id="alertPrice" placeholder="Max price in €"/>
+          <button type="button" id="setAlertBtn">
+            <i class="fas fa-bell"></i> Set Alert
+          </button>
+        </div>
+        <div id="activeAlerts" class="active-alerts"></div>
+      </div>
+
+      <!-- RESULTS SECTION -->
+      <section id="resultsSection" class="results-section hidden">
+
+        <!-- FILTER BAR -->
+        <div class="filter-bar">
+          <h2 id="resultsTitle">Search Results</h2>
+          <div class="filters">
+            <button class="filter-btn active" data-sort="price">
+              <i class="fas fa-euro-sign"></i> Price
+            </button>
+            <button class="filter-btn" data-sort="duration">
+              <i class="fas fa-clock"></i> Duration
+            </button>
+            <button class="filter-btn" data-sort="stops">
+              <i class="fas fa-map-marker-alt"></i> Stops
+            </button>
+            <select id="maxStopsFilter">
+              <option value="any">Any stops</option>
+              <option value="0">Direct only</option>
+              <option value="1">Max 1 stop</option>
+              <option value="2">Max 2 stops</option>
             </select>
           </div>
+        </div>
 
-          <div class="input-group luggage-group">
-            <label><i class="fas fa-suitcase-rolling"></i> Options</label>
-            <div class="toggles">
-              <label class="toggle-switch">
-                <input type="checkbox" id="checkedBaggage"/>
-                <span class="slider"></span>
-                <span class="toggle-label">Checked Baggage</span>
-              </label>
-              <label class="toggle-switch">
-                <input type="checkbox" id="directOnly"/>
-                <span class="slider"></span>
-                <span class="toggle-label">Direct Flights Only</span>
-              </label>
-              <label class="toggle-switch">
-                <input type="checkbox" id="flexDates"/>
-                <span class="slider"></span>
-                <span class="toggle-label">Flexible Dates</span>
-              </label>
-            </div>
+        <!-- LOADING STATE -->
+        <div id="loadingState" class="loading-state hidden">
+          <div class="spinner"></div>
+          <p id="loadingText">Searching across all sites...</p>
+          <div class="search-progress">
+            <div id="progressBar" class="progress-bar"></div>
+          </div>
+          <div id="siteStatuses" class="site-statuses"></div>
+        </div>
+
+        <!-- RESULTS GRID -->
+        <div id="resultsGrid" class="results-grid"></div>
+
+        <!-- CALENDAR VIEW -->
+        <div id="calendarView" class="calendar-view hidden">
+          <h3>Price Calendar</h3>
+          <div id="calendarGrid"></div>
+        </div>
+
+        <!-- VIEW TOGGLES -->
+        <div class="view-toggles">
+          <button id="listViewBtn" class="view-btn active">
+            <i class="fas fa-list"></i> List
+          </button>
+          <button id="calendarViewBtn" class="view-btn">
+            <i class="fas fa-calendar"></i> Calendar
+          </button>
+        </div>
+
+      </section>
+
+      <!-- POPULAR ROUTES -->
+      <section class="popular-routes">
+        <h3><i class="fas fa-fire"></i> Popular Routes</h3>
+        <div class="routes-grid" id="popularRoutes"></div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <p>
+        <i class="fas fa-user-secret"></i> All searches done in private mode
+        • Prices in EUR • 
+        <a href="https://github.com/yourusername/flighthunt" target="_blank">
+          <i class="fab fa-github"></i> GitHub
+        </a>
+      </p>
+    </footer>
+
+    <!-- MODAL for booking redirect -->
+    <div id="bookingModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3><i class="fas fa-external-link-alt"></i> Opening Booking Site</h3>
+          <button id="closeModal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <p id="modalMessage">Taking you to the booking page...</p>
+          <div class="modal-warning">
+            <i class="fas fa-info-circle"></i>
+            <small>
+              Opening in a new tab. The site will open without tracking cookies. 
+              You'll be taken directly to the search results page.
+            </small>
+          </div>
+          <div class="modal-actions">
+            <button id="confirmBooking" class="confirm-btn">
+              <i class="fas fa-external-link-alt"></i> Open Booking Page
+            </button>
+            <button id="copyLink" class="copy-btn">
+              <i class="fas fa-copy"></i> Copy Link
+            </button>
           </div>
         </div>
-
-        <!-- SEARCH BUTTON -->
-        <button type="submit" class="search-btn" id="searchBtn">
-          <i class="fas fa-search"></i>
-          <span>Search All Sites (Private Mode)</span>
-        </button>
-
-        <div class="privacy-notice">
-          <i class="fas fa-user-secret"></i>
-          Searching in incognito mode • Cookies cleared • No tracking
-        </div>
-
-      </form>
-    </div>
-
-    <!-- PRICE ALERTS -->
-    <div class="alert-section">
-      <h3><i class="fas fa-bell"></i> Price Alerts</h3>
-      <div class="alert-form">
-        <input type="email" id="alertEmail" placeholder="your@email.com"/>
-        <input type="number" id="alertPrice" placeholder="Max price in €"/>
-        <button type="button" id="setAlertBtn">
-          <i class="fas fa-bell"></i> Set Alert
-        </button>
-      </div>
-      <div id="activeAlerts" class="active-alerts"></div>
-    </div>
-
-    <!-- RESULTS -->
-    <section id="resultsSection" class="results-section hidden">
-
-      <div class="filter-bar">
-        <h2 id="resultsTitle">Search Results</h2>
-        <div class="filters">
-          <button class="filter-btn active" data-sort="price">
-            <i class="fas fa-euro-sign"></i> Price
-          </button>
-          <button class="filter-btn" data-sort="duration">
-            <i class="fas fa-clock"></i> Duration
-          </button>
-          <select id="maxStopsFilter">
-            <option value="any">Any stops</option>
-            <option value="0">Direct only</option>
-            <option value="1">Max 1 stop</option>
-          </select>
-        </div>
-      </div>
-
-      <div id="loadingState" class="loading-state hidden">
-        <div class="spinner"></div>
-        <p id="loadingText">Searching...</p>
-        <div class="search-progress">
-          <div id="progressBar" class="progress-bar"></div>
-        </div>
-        <div id="siteStatuses" class="site-statuses"></div>
-      </div>
-
-      <div class="view-toggles">
-        <button id="listViewBtn" class="view-btn active">
-          <i class="fas fa-list"></i> List
-        </button>
-        <button id="calendarViewBtn" class="view-btn">
-          <i class="fas fa-calendar"></i> Calendar
-        </button>
-      </div>
-
-      <div id="resultsGrid" class="results-grid"></div>
-
-      <div id="calendarView" class="calendar-view hidden">
-        <div id="calendarGrid"></div>
-      </div>
-
-    </section>
-
-    <!-- POPULAR ROUTES -->
-    <section class="popular-routes">
-      <h3><i class="fas fa-fire"></i> Popular Routes</h3>
-      <div class="routes-grid" id="popularRoutes"></div>
-    </section>
-
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="footer">
-    <p>
-      <i class="fas fa-user-secret"></i>
-      All searches done in private mode • Prices in EUR •
-      <a href="https://github.com/movliksenjaliya/flighthunt" target="_blank">
-        <i class="fab fa-github"></i> GitHub
-      </a>
-    </p>
-  </footer>
-
-  <!-- BOOKING MODAL -->
-  <div id="bookingModal" class="modal hidden">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3><i class="fas fa-external-link-alt"></i> Opening Booking Site</h3>
-        <button id="closeModal"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="modal-body">
-        <p id="modalMessage">Taking you to the booking page...</p>
-        <div class="modal-warning">
-          <i class="fas fa-info-circle"></i>
-          <small>
-            Opens in a new tab without tracking cookies.
-            For maximum privacy use incognito mode.
-          </small>
-        </div>
-        <div class="modal-actions">
-          <button id="confirmBooking" class="confirm-btn">
-            <i class="fas fa-external-link-alt"></i> Open Booking Page
-          </button>
-          <button id="copyLink" class="copy-btn">
-            <i class="fas fa-copy"></i> Copy Link
-          </button>
-        </div>
       </div>
     </div>
-  </div>
 
-  <!-- TOAST -->
-  <div id="toast" class="toast hidden"></div>
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast hidden"></div>
 
-</div>
+  </div><!-- end #app -->
 
-<!-- SCRIPTS — capital JS folder to match your repo -->
-<script src="JS/utils.js"></script>
-<script src="JS/scrapers.js"></script>
-<script src="JS/app.js"></script>
-
+  <script src="js/utils.js"></script>
+  <script src="js/scrapers.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
