@@ -1,123 +1,68 @@
 // =============================================
-// SCRAPERS.JS
-// Shows REAL prices via search redirects
-// No fake prices — sends user directly to
-// booking sites with correct search URLs
+// SCRAPERS.JS - Clean rewrite
 // =============================================
 
-// =============================================
-// SEARCH SITES — what we show as results
-// =============================================
-
-const RESULT_SITES = [
-  {
-    id:    'google_flights',
-    name:  'Google Flights',
-    icon:  '🔍',
-    color: '#4285f4',
-    note:  'Best price comparison',
-  },
-  {
-    id:    'skyscanner',
-    name:  'Skyscanner',
-    icon:  '🌐',
-    color: '#00a9e0',
-    note:  'Compare all airlines',
-  },
-  {
-    id:    'kayak',
-    name:  'Kayak',
-    icon:  '🛶',
-    color: '#ff6600',
-    note:  'Price forecasting',
-  },
-  {
-    id:    'kiwi',
-    name:  'Kiwi.com',
-    icon:  '🥝',
-    color: '#00b2a1',
-    note:  'Flexible routes & dates',
-  },
-  {
-    id:    'expedia',
-    name:  'Expedia',
-    icon:  '✈️',
-    color: '#00355f',
-    note:  'Flights + Hotels bundles',
-  },
-  {
-    id:    'momondo',
-    name:  'Momondo',
-    icon:  '🌸',
-    color: '#e91e8c',
-    note:  'Hidden deal finder',
-  },
+var RESULT_SITES = [
+  { id:'skyscanner',    name:'Skyscanner',     icon:'🌐', color:'#00a9e0', note:'Compare all airlines — best overall'          },
+  { id:'kayak',         name:'Kayak',          icon:'🛶', color:'#ff6600', note:'Compares 100s of travel sites at once'        },
+  { id:'kiwi',          name:'Kiwi.com',       icon:'🥝', color:'#00b2a1', note:'Cheapest combinations and flexible dates'     },
+  { id:'expedia',       name:'Expedia',        icon:'✈️', color:'#00355f', note:'Flights and hotel bundles'                    },
+  { id:'momondo',       name:'Momondo',        icon:'🌸', color:'#e91e8c', note:'Finds hidden deals from smaller sites'        },
+  { id:'google_flights',name:'Google Flights', icon:'🔍', color:'#4285f4', note:'Great overview — set dates after opening'     },
 ];
 
-// =============================================
-// MAIN SEARCH FUNCTION
-// Returns search links — NOT fake prices
-// =============================================
-
 async function searchFlights(params, onProgress) {
-  const total = RESULT_SITES.length;
-  let done = 0;
+  var total = RESULT_SITES.length;
+  var done  = 0;
 
-  // Simulate checking each site (UX progress)
-  const sitePromises = RESULT_SITES.map((site, idx) =>
-    new Promise(resolve => {
-      setTimeout(() => {
-        onProgress?.({
-          type:   'status',
-          siteId: site.id,
-          status: 'searching',
-          name:   site.name,
-        });
-
-        setTimeout(() => {
+  var promises = RESULT_SITES.map(function(site, idx) {
+    return new Promise(function(resolve) {
+      setTimeout(function() {
+        if (onProgress) {
+          onProgress({ type:'status', siteId:site.id, status:'searching', name:site.name });
+        }
+        setTimeout(function() {
           done++;
-          onProgress?.({
-            type:    'status',
-            siteId:  site.id,
-            status:  'done',
-            name:    site.name,
-          });
-          onProgress?.({
-            type:    'progress',
-            percent: Math.round((done / total) * 100),
-          });
+          if (onProgress) {
+            onProgress({ type:'status', siteId:site.id, status:'done', name:site.name });
+            onProgress({ type:'progress', percent: Math.round((done / total) * 100) });
+          }
           resolve();
-        }, 400 + Math.random() * 600);
+        }, 300 + Math.random() * 400);
+      }, idx * 200);
+    });
+  });
 
-      }, idx * 300);
-    })
-  );
+  await Promise.all(promises);
 
-  await Promise.all(sitePromises);
-
-  // Build result cards — one per site
-  // Each card links directly to that site's search results
-  const results = RESULT_SITES.map(site => ({
-    id:          `${site.id}_${generateId()}`,
-    source:      site.name,
-    sourceId:    site.id,
-    sourceColor: site.color,
-    sourceIcon:  site.icon,
-    sourceNote:  site.note,
-    bookingUrl:  SEARCH_SITES.find(s => s.id === site.id)?.buildUrl(params) || '#',
-    params:      { ...params },
-    isLowest:    false,
-  }));
+  // Build one result card per site
+  var results = RESULT_SITES.map(function(site) {
+    // Find matching builder in SEARCH_SITES
+    var siteConfig = SEARCH_SITES.find(function(s) { return s.id === site.id; });
+    var url = '#';
+    if (siteConfig && siteConfig.buildUrl) {
+      try {
+        url = siteConfig.buildUrl(params);
+      } catch(e) {
+        console.warn('URL build error for', site.id, e);
+        url = '#';
+      }
+    }
+    return {
+      id:          site.id + '_' + generateId(),
+      source:      site.name,
+      sourceId:    site.id,
+      sourceColor: site.color,
+      sourceIcon:  site.icon,
+      sourceNote:  site.note,
+      bookingUrl:  url,
+      params:      JSON.parse(JSON.stringify(params)),
+    };
+  });
 
   return results;
 }
 
-// =============================================
-// CALENDAR PRICE FETCHER
-// Opens Google Flights calendar view
-// =============================================
-
 async function fetchCalendarPrices(params) {
-  // Return empty — we now use real site redirects
   return {};
 }
