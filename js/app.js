@@ -1,32 +1,17 @@
 // =============================================
-// APP.JS - Complete clean rewrite
+// APP.JS - Complete Version
 // =============================================
 
-// ---- STATE ----
 var state = {
-  tripType:       'roundtrip',
-  origin:         '',
-  destination:    '',
-  departDate:     '',
-  returnDate:     '',
-  adults:         1,
-  children:       0,
-  cabinClass:     'economy',
-  checkedBaggage: false,
-  directOnly:     false,
-  flexDates:      false,
-  results:        [],
-  sortBy:         'price',
-  maxStops:       'any',
-  currentBookingUrl: '',
-  alerts:         [],
-  theme:          'dark',
+  tripType:'roundtrip', origin:'', destination:'',
+  departDate:'', returnDate:'',
+  adults:1, children:0, cabinClass:'economy',
+  checkedBaggage:false, directOnly:false, flexDates:false,
+  results:[], sortBy:'price', maxStops:'any',
+  currentBookingUrl:'', alerts:[], theme:'dark',
 };
 
-// ---- DOM HELPER ----
 function $(id) { return document.getElementById(id); }
-
-// ---- DOM REFS ----
 var dom = {};
 
 function initDom() {
@@ -56,11 +41,6 @@ function initDom() {
   dom.destDropdown    = $('destDropdown');
   dom.darkToggle      = $('darkToggle');
   dom.installBtn      = $('installBtn');
-  dom.bookingModal    = $('bookingModal');
-  dom.modalMessage    = $('modalMessage');
-  dom.confirmBooking  = $('confirmBooking');
-  dom.copyLink        = $('copyLink');
-  dom.closeModal      = $('closeModal');
   dom.toast           = $('toast');
   dom.swapBtn         = $('swapBtn');
   dom.popularRoutes   = $('popularRoutes');
@@ -86,57 +66,48 @@ function init() {
   attachEventListeners();
   registerServiceWorker();
   setupInstallPrompt();
-  var savedTheme = Storage.get('theme', 'dark');
-  setTheme(savedTheme);
+  setTheme(Storage.get('theme', 'dark'));
   updateTripTypeUI();
   console.log('✅ FlightHunt initialized');
 }
 
 // =============================================
-// SET DEFAULT DATES — timezone safe
+// DEFAULT DATES — TODAY as departure
 // =============================================
 
 function setDefaultDates() {
+  // Get current LOCAL date — NO timezone issues
   var now = new Date();
   var Y   = now.getFullYear();
-  var M   = now.getMonth();
+  var M   = now.getMonth();   // 0-based
   var D   = now.getDate();
 
-  // Depart = TODAY (not +7 days)
-  var d0 = new Date(Y, M, D);
-  // Return = TODAY + 7 days
-  var d1 = new Date(Y, M, D + 7);
+  // today
+  var today  = new Date(Y, M, D);
+  // return = today + 7 days
+  var retDay = new Date(Y, M, D + 7);
 
   function fmt(d) {
-    var yy = d.getFullYear();
-    var mm = String(d.getMonth() + 1).padStart(2, '0');
-    var dd = String(d.getDate()).padStart(2, '0');
+    var yy  = d.getFullYear();
+    var mm  = String(d.getMonth() + 1).padStart(2, '0');
+    var dd  = String(d.getDate()).padStart(2, '0');
     return yy + '-' + mm + '-' + dd;
   }
 
-  var todayStr  = fmt(d0);
-  var returnStr = fmt(d1);
+  var todayStr  = fmt(today);
+  var returnStr = fmt(retDay);
 
-  // Min date = today (cannot pick past dates)
   dom.departDate.min   = todayStr;
   dom.returnDate.min   = todayStr;
+  dom.departDate.value = todayStr;    // ← TODAY
+  dom.returnDate.value = returnStr;   // ← today + 7
 
-  // Departure = TODAY
-  dom.departDate.value = todayStr;
-
-  // Return = today + 7 days
-  dom.returnDate.value = returnStr;
-
-  // Save to state
   state.departDate = todayStr;
   state.returnDate = returnStr;
 
-  console.log('Today:', todayStr, '| Return default:', returnStr);
+  console.log('✅ Departure set to TODAY:', todayStr);
+  console.log('✅ Return set to:', returnStr);
 }
-
-// =============================================
-// LOAD SAVED STATE
-// =============================================
 
 function loadSavedState() {
   var saved = Storage.get('lastSearch');
@@ -156,41 +127,35 @@ function loadSavedState() {
 
 function attachEventListeners() {
 
-  // Trip type
-  var radios = document.querySelectorAll('input[name="tripType"]');
-  radios.forEach(function(radio) {
-    radio.addEventListener('change', function(e) {
+  document.querySelectorAll('input[name="tripType"]').forEach(function(r) {
+    r.addEventListener('change', function(e) {
       state.tripType = e.target.value;
       updateTripTypeUI();
     });
   });
 
-  // Search form
   dom.form.addEventListener('submit', handleSearch);
 
-  // Swap airports
   dom.swapBtn.addEventListener('click', function() {
-    var tmp           = dom.origin.value;
+    var tmp = dom.origin.value;
     dom.origin.value      = dom.destination.value;
     dom.destination.value = tmp;
-    var tmpState      = state.origin;
+    var ts = state.origin;
     state.origin      = state.destination;
-    state.destination = tmpState;
-    showToast('Airports swapped ↔');
+    state.destination = ts;
+    showToast('✈ Airports swapped');
   });
 
-  // Airport autocomplete
   dom.origin.addEventListener('input', debounce(function(e) {
     showAirportDropdown(e.target.value, 'origin');
-  }, 200));
+  }, 150));
 
   dom.destination.addEventListener('input', debounce(function(e) {
     showAirportDropdown(e.target.value, 'dest');
-  }, 200));
+  }, 150));
 
-  // Close dropdowns on outside click
   document.addEventListener('click', function(e) {
-    if (!e.target.closest('#origin') && !e.target.closest('#originDropdown')) {
+    if (!e.target.closest('#origin')      && !e.target.closest('#originDropdown')) {
       if (dom.originDropdown) dom.originDropdown.classList.add('hidden');
     }
     if (!e.target.closest('#destination') && !e.target.closest('#destDropdown')) {
@@ -198,14 +163,13 @@ function attachEventListeners() {
     }
   });
 
-  // Date changes
   dom.departDate.addEventListener('change', function(e) {
     state.departDate = e.target.value;
     if (state.tripType === 'roundtrip') {
       if (!state.returnDate || state.returnDate <= e.target.value) {
-        var autoRet = addDays(e.target.value, 7);
-        dom.returnDate.value = autoRet;
-        state.returnDate     = autoRet;
+        var ar = addDays(e.target.value, 7);
+        dom.returnDate.value = ar;
+        state.returnDate = ar;
       }
       dom.returnDate.min = e.target.value;
     }
@@ -215,79 +179,38 @@ function attachEventListeners() {
     state.returnDate = e.target.value;
   });
 
-  // Passengers
-  var countBtns = document.querySelectorAll('.count-btn');
-  countBtns.forEach(function(btn) {
+  document.querySelectorAll('.count-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      var type   = btn.dataset.type;
-      var action = btn.dataset.action;
-      if (action === 'plus')  updateCounter(type, state[type] + 1);
-      if (action === 'minus') updateCounter(type, state[type] - 1);
+      updateCounter(btn.dataset.type,
+        state[btn.dataset.type] + (btn.dataset.action === 'plus' ? 1 : -1));
     });
   });
 
-  // Cabin class
-  dom.cabinClass.addEventListener('change', function(e) {
-    state.cabinClass = e.target.value;
-  });
-
-  // Toggles
+  dom.cabinClass.addEventListener('change', function(e) { state.cabinClass = e.target.value; });
   dom.checkedBaggage.addEventListener('change', function(e) { state.checkedBaggage = e.target.checked; });
-  dom.directOnly.addEventListener('change',     function(e) { state.directOnly     = e.target.checked; });
-  dom.flexDates.addEventListener('change',      function(e) { state.flexDates      = e.target.checked; });
+  dom.directOnly.addEventListener('change',    function(e) { state.directOnly     = e.target.checked; });
+  dom.flexDates.addEventListener('change',     function(e) { state.flexDates      = e.target.checked; });
 
-  // Theme toggle
   dom.darkToggle.addEventListener('click', function() {
     setTheme(state.theme === 'dark' ? 'light' : 'dark');
   });
 
-  // Sort buttons
-  var filterBtns = document.querySelectorAll('.filter-btn');
-  filterBtns.forEach(function(btn) {
+  document.querySelectorAll('.filter-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      filterBtns.forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
       btn.classList.add('active');
       state.sortBy = btn.dataset.sort;
       renderResults();
     });
   });
 
-  // Max stops filter
   dom.maxStopsFilter.addEventListener('change', function(e) {
     state.maxStops = e.target.value;
     renderResults();
   });
 
-  // Modal controls
-  dom.closeModal.addEventListener('click', closeModal);
-  dom.bookingModal.addEventListener('click', function(e) {
-    if (e.target === dom.bookingModal) closeModal();
-  });
-
-  dom.confirmBooking.addEventListener('click', function() {
-    if (state.currentBookingUrl) {
-      var result = openPrivateBookingTab(state.currentBookingUrl);
-      if (!result.success) {
-        showToast('Popup blocked — use Copy Link instead');
-      } else {
-        showToast('✈️ Opening booking page...');
-        closeModal();
-      }
-    }
-  });
-
-  dom.copyLink.addEventListener('click', function() {
-    if (state.currentBookingUrl) {
-      copyToClipboard(state.currentBookingUrl).then(function() {
-        showToast('📋 Link copied! Paste in private/incognito window.');
-      });
-    }
-  });
-
-  // Price alerts
   dom.setAlertBtn.addEventListener('click', handleSetAlert);
 
-  // View toggles
   dom.listViewBtn.addEventListener('click', function() {
     dom.listViewBtn.classList.add('active');
     dom.calendarViewBtn.classList.remove('active');
@@ -300,37 +223,21 @@ function attachEventListeners() {
     dom.listViewBtn.classList.remove('active');
     dom.resultsGrid.classList.add('hidden');
     dom.calendarView.classList.remove('hidden');
-    renderCalendarView();
-  });
-
-  // Keyboard
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeModal();
   });
 }
 
-// =============================================
-// TRIP TYPE UI
-// =============================================
-
 function updateTripTypeUI() {
-  var isRound = state.tripType === 'roundtrip';
   if (dom.returnDateGroup) {
-    dom.returnDateGroup.classList.toggle('hidden', !isRound);
+    dom.returnDateGroup.classList.toggle('hidden', state.tripType !== 'roundtrip');
   }
 }
 
-// =============================================
-// COUNTER
-// =============================================
-
 function updateCounter(type, value) {
-  var limits = { adults:[1,9], children:[0,8] };
-  var lim    = limits[type] || [0,9];
-  var clamped = Math.max(lim[0], Math.min(lim[1], value));
-  state[type] = clamped;
+  var lims = {adults:[1,9], children:[0,8]};
+  var lim  = lims[type] || [0,9];
+  state[type] = Math.max(lim[0], Math.min(lim[1], value));
   var el = $(type + 'Count');
-  if (el) el.textContent = clamped;
+  if (el) el.textContent = state[type];
 }
 
 // =============================================
@@ -339,34 +246,33 @@ function updateCounter(type, value) {
 
 function showAirportDropdown(query, which) {
   var dropdown = which === 'origin' ? dom.originDropdown : dom.destDropdown;
-  var input    = which === 'origin' ? dom.origin          : dom.destination;
+  var input    = which === 'origin' ? dom.origin         : dom.destination;
   var matches  = searchAirports(query);
 
   if (!matches.length || query.length < 2) {
-    if (dropdown) dropdown.classList.add('hidden');
+    dropdown.classList.add('hidden');
     return;
   }
 
   dropdown.innerHTML = matches.map(function(a) {
     return '<div class="airport-item" data-iata="' + a.iata + '" data-city="' + a.city + '">' +
-           '<span>' + a.city + ' — ' + a.name + '</span>' +
-           '<span class="iata">' + a.iata + '</span>' +
-           '</div>';
+      '<div>' +
+        '<div class="city-name">' + a.city + ' — ' + a.name + '</div>' +
+        '<div class="country-name">' + a.country + '</div>' +
+      '</div>' +
+      '<span class="iata">' + a.iata + '</span>' +
+    '</div>';
   }).join('');
 
   dropdown.classList.remove('hidden');
 
-  var items = dropdown.querySelectorAll('.airport-item');
-  items.forEach(function(item) {
+  dropdown.querySelectorAll('.airport-item').forEach(function(item) {
     item.addEventListener('click', function() {
       var iata = item.dataset.iata;
       var city = item.dataset.city;
       input.value = city + ' (' + iata + ')';
-      if (which === 'origin') {
-        state.origin = iata;
-      } else {
-        state.destination = iata;
-      }
+      if (which === 'origin') state.origin = iata;
+      else state.destination = iata;
       dropdown.classList.add('hidden');
     });
   });
@@ -374,14 +280,76 @@ function showAirportDropdown(query, which) {
 
 function extractIATA(str) {
   if (!str) return '';
-  var match = str.match(/\(([A-Z]{3})\)/);
-  if (match) return match[1];
-  var clean = str.trim().toUpperCase();
-  if (/^[A-Z]{3}$/.test(clean)) return clean;
-  var found = AIRPORTS.find(function(a) {
+  var m = str.match(/\(([A-Z]{3})\)/);
+  if (m) return m[1];
+  var c = str.trim().toUpperCase();
+  if (/^[A-Z]{3}$/.test(c)) return c;
+  var f = AIRPORTS.find(function(a) {
     return a.city.toLowerCase() === str.toLowerCase();
   });
-  return found ? found.iata : clean;
+  return f ? f.iata : c;
+}
+
+// =============================================
+// BEST DEAL ALGORITHM
+// =============================================
+
+function rankResults(results) {
+  if (!results || !results.length) return results;
+
+  var params   = results[0].params || {};
+  var isEU     = isEuropeOnlyRoute(params.origin, params.destination);
+  var isIndia  = isIndiaRoute2(params.origin, params.destination);
+
+  // Base score — lower = likely cheaper for that route type
+  var scores = {
+    wizzair:      isEU    ? 1 : 8,
+    ryanair:      isEU    ? 2 : 9,
+    easyjet:      isEU    ? 3 : 10,
+    kiwi:         isIndia ? 2 : 4,
+    momondo:      isIndia ? 3 : 5,
+    skyscanner:   isIndia ? 4 : 6,
+    trip:         isIndia ? 1 : 7,
+    emirates:     isIndia ? 2 : 8,
+    kayak:        5,
+    expedia:      7,
+    lufthansa:    9,
+    google_flights: 11,
+  };
+
+  results.sort(function(a, b) {
+    var sa = scores[a.sourceId] || 99;
+    var sb = scores[b.sourceId] || 99;
+    return sa - sb;
+  });
+
+  results.forEach(function(r, idx) {
+    r.isBestDeal = idx === 0;
+    r.isGoodDeal = idx === 1 || idx === 2;
+    r.dealRank   = idx;
+  });
+
+  return results;
+}
+
+function isEuropeOnlyRoute(origin, destination) {
+  var euroCountries = ['Germany','UK','France','Netherlands','Spain','Italy','Austria',
+    'Switzerland','Belgium','Denmark','Sweden','Norway','Finland','Portugal','Greece',
+    'Poland','Czech Rep.','Hungary','Romania','Bulgaria','Croatia','Ireland','Iceland',
+    'Turkey','Serbia','Slovenia','Slovakia','Malta','Estonia','Latvia','Lithuania'];
+  function check(iata) {
+    var a = getAirportByIATA(iata);
+    return a && euroCountries.indexOf(a.country) !== -1;
+  }
+  return check(origin) && check(destination);
+}
+
+function isIndiaRoute2(origin, destination) {
+  function check(iata) {
+    var a = getAirportByIATA(iata);
+    return a && a.country === 'India';
+  }
+  return check(origin) || check(destination);
 }
 
 // =============================================
@@ -391,25 +359,18 @@ function extractIATA(str) {
 async function handleSearch(e) {
   e.preventDefault();
 
-  var originRaw = dom.origin.value.trim();
-  var destRaw   = dom.destination.value.trim();
-
-  state.origin      = extractIATA(originRaw);
-  state.destination = extractIATA(destRaw);
-
-  // Read dates DIRECTLY from form inputs
+  state.origin      = extractIATA(dom.origin.value.trim());
+  state.destination = extractIATA(dom.destination.value.trim());
   state.departDate  = dom.departDate.value;
   state.returnDate  = dom.returnDate.value;
   state.cabinClass  = dom.cabinClass.value;
 
-  console.log('Search:', state.origin, '→', state.destination,
-    '| depart:', state.departDate,
-    '| return:', state.returnDate,
-    '| adults:', state.adults,
-    '| children:', state.children);
+  console.log('🔍 Searching:', state.origin, '→', state.destination);
+  console.log('📅 Dates:', state.departDate, '→', state.returnDate);
+  console.log('👤 Passengers:', state.adults, 'adults,', state.children, 'children');
 
   if (!state.origin || !state.destination) {
-    showToast('⚠️ Please enter origin and destination airports'); return;
+    showToast('⚠️ Please enter origin and destination'); return;
   }
   if (state.origin === state.destination) {
     showToast('⚠️ Origin and destination cannot be the same'); return;
@@ -418,7 +379,6 @@ async function handleSearch(e) {
     showToast('⚠️ Please select a departure date'); return;
   }
 
-  // Save last search
   Storage.set('lastSearch', {
     origin:      state.origin,
     destination: state.destination,
@@ -427,12 +387,11 @@ async function handleSearch(e) {
     children:    state.children,
   });
 
-  // Show results section
   dom.resultsSection.classList.remove('hidden');
   dom.loadingState.classList.remove('hidden');
-  dom.resultsGrid.innerHTML    = '';
-  dom.siteStatuses.innerHTML   = '';
-  dom.progressBar.style.width  = '0%';
+  dom.resultsGrid.innerHTML   = '';
+  dom.siteStatuses.innerHTML  = '';
+  dom.progressBar.style.width = '0%';
 
   var originInfo = getAirportByIATA(state.origin);
   var destInfo   = getAirportByIATA(state.destination);
@@ -440,9 +399,8 @@ async function handleSearch(e) {
     (originInfo ? originInfo.city : state.origin) + ' → ' +
     (destInfo   ? destInfo.city   : state.destination);
 
-  dom.loadingText.textContent = 'Searching across all sites privately...';
-
-  dom.resultsSection.scrollIntoView({ behavior:'smooth', block:'start' });
+  dom.loadingText.textContent = 'Searching ' + SEARCH_SITES.length + ' sites privately...';
+  dom.resultsSection.scrollIntoView({behavior:'smooth', block:'start'});
 
   dom.searchBtn.classList.add('loading');
   dom.searchBtn.querySelector('span').textContent = 'Searching...';
@@ -461,11 +419,11 @@ async function handleSearch(e) {
   };
 
   try {
-    var results = await searchFlights(searchParams, handleSearchProgress);
+    var results = await searchFlights(searchParams, handleProgress);
+    results = rankResults(results);
     state.results = results;
     dom.loadingState.classList.add('hidden');
     renderResults();
-    checkPriceAlerts(results);
   } catch(err) {
     console.error('Search error:', err);
     showToast('❌ Search failed. Please try again.');
@@ -476,11 +434,7 @@ async function handleSearch(e) {
   dom.searchBtn.querySelector('span').textContent = 'Search All Sites (Private Mode)';
 }
 
-// =============================================
-// PROGRESS HANDLER
-// =============================================
-
-function handleSearchProgress(event) {
+function handleProgress(event) {
   if (event.type === 'progress') {
     dom.progressBar.style.width = event.percent + '%';
     return;
@@ -493,7 +447,7 @@ function handleSearchProgress(event) {
       el.dataset.site = event.siteId;
       dom.siteStatuses.appendChild(el);
     }
-    var icons = { searching:'⏳', done:'✅', error:'❌' };
+    var icons = {searching:'⏳', done:'✅', error:'❌'};
     el.className   = 'site-status ' + event.status;
     el.textContent = (icons[event.status] || '') + ' ' + event.name;
   }
@@ -509,9 +463,8 @@ function renderResults() {
   if (!filtered.length) {
     dom.resultsGrid.innerHTML =
       '<div style="text-align:center;padding:2rem;color:var(--text-muted);">' +
-      '<i class="fas fa-search" style="font-size:2rem;margin-bottom:0.8rem;display:block;"></i>' +
-      'No results found. Try again.' +
-      '</div>';
+      '<i class="fas fa-search" style="font-size:2rem;display:block;margin-bottom:0.8rem;"></i>' +
+      'No results. Please search again.</div>';
     return;
   }
 
@@ -519,19 +472,33 @@ function renderResults() {
     return renderResultCard(r, idx);
   }).join('');
 
-  var bookBtns = dom.resultsGrid.querySelectorAll('.book-btn');
-  bookBtns.forEach(function(btn) {
+  // Attach DIRECT click handlers — NO modal
+  dom.resultsGrid.querySelectorAll('.book-btn').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
-      var url  = decodeURIComponent(btn.dataset.url);
-      var name = btn.dataset.site;
-      openBookingModal(url, name);
+      var url = btn.dataset.url;
+      if (!url || url === '#') {
+        showToast('⚠️ URL not available');
+        return;
+      }
+      // Clear cookies for privacy
+      clearAppCookies();
+      // Open DIRECTLY — no popup modal
+      var win = window.open(url, '_blank', 'noopener,noreferrer');
+      if (!win) {
+        // If popup blocked, copy to clipboard
+        copyToClipboard(url).then(function() {
+          showToast('📋 Popup blocked — link copied! Paste in new tab.');
+        });
+      } else {
+        showToast('✈️ Opening ' + btn.dataset.site + '...');
+      }
     });
   });
 }
 
 // =============================================
-// RESULT CARD
+// RESULT CARD HTML
 // =============================================
 
 function renderResultCard(r, idx) {
@@ -541,80 +508,84 @@ function renderResultCard(r, idx) {
   var totalPax = adults + children;
   var isGoogle = r.sourceId === 'google_flights';
 
+  // Deal badge
+  var badgeHtml = '';
+  if (r.isBestDeal) {
+    badgeHtml = '<div class="best-deal-badge">' +
+      '<i class="fas fa-trophy"></i> Best Deal</div>';
+  } else if (r.isGoodDeal) {
+    badgeHtml = '<div class="good-deal-badge">' +
+      '<i class="fas fa-thumbs-up"></i> Good Deal</div>';
+  }
+
+  // Card class
+  var cardClass = 'result-card';
+  if (r.isBestDeal) cardClass += ' best-deal-card';
+  else if (r.isGoodDeal) cardClass += ' good-deal-card';
+
+  // Site descriptions
   var descriptions = {
-    google_flights: '⚠️ Google blocks date pre-filling. Airports pre-filled — set dates manually after opening.',
-    skyscanner:     '✅ Opens with your exact dates, route and passengers pre-filled.',
-    kayak:          '✅ Opens with your exact dates, route and passengers pre-filled.',
-    kiwi:           '✅ Opens with your exact dates, route and passengers pre-filled.',
-    expedia:        '✅ Opens with your exact dates, route and passengers pre-filled.',
-    momondo:        '✅ Opens with your exact dates, route and passengers pre-filled.',
+    google_flights: '⚠️ Airports pre-filled — please set dates manually after opening.',
+    skyscanner:     '✅ Full search pre-filled with your dates and passengers.',
+    kayak:          '✅ Full search pre-filled with your dates and passengers.',
+    kiwi:           '✅ Full search pre-filled with your dates and passengers.',
+    expedia:        '✅ Full search pre-filled with your dates and passengers.',
+    momondo:        '✅ Full search pre-filled with your dates and passengers.',
+    wizzair:        '✅ Full search pre-filled with your dates and passengers.',
+    ryanair:        '✅ Full search pre-filled with your dates and passengers.',
+    easyjet:        '✅ Full search pre-filled with your dates and passengers.',
+    lufthansa:      '✅ Full search pre-filled with your dates and passengers.',
+    emirates:       '✅ Full search pre-filled with your dates and passengers.',
+    trip:           '✅ Full search pre-filled with your dates and passengers.',
   };
 
-  var googleWarning = isGoogle
-    ? '<div style="background:rgba(255,152,0,0.15);border:1px solid rgba(255,152,0,0.4);border-radius:6px;padding:0.4rem 0.7rem;font-size:0.75rem;color:#ff9800;margin-top:0.4rem;">⚠️ Set your dates manually after opening Google Flights</div>'
+  var googleNote = isGoogle
+    ? '<div style="background:rgba(255,152,0,0.12);border:1px solid rgba(255,152,0,0.3);' +
+      'border-radius:6px;padding:0.4rem 0.7rem;font-size:0.75rem;color:#e07b00;margin-top:0.4rem;">' +
+      '⚠️ Google Flights blocks date pre-filling — set dates manually after opening</div>'
     : '';
 
-  var encodedUrl = encodeURIComponent(r.bookingUrl || '#');
+  var url = r.bookingUrl || '#';
 
-  return '<div class="result-card site-card">' +
+  return '<div class="' + cardClass + '">' +
+    badgeHtml +
     '<div class="site-card-left">' +
       '<div class="site-icon-name">' +
-        '<span style="font-size:1.5rem">' + r.sourceIcon + '</span>' +
+        '<span style="font-size:1.6rem;line-height:1;">' + r.sourceIcon + '</span>' +
         '<div>' +
-          '<div style="font-weight:700;font-size:1rem;">' + r.source + '</div>' +
-          '<div style="font-size:0.75rem;color:var(--text-muted);">' + (r.sourceNote || '') + '</div>' +
+          '<div class="site-name-text">' + r.source + '</div>' +
+          '<div class="site-note-text">' + (r.sourceNote || '') + '</div>' +
         '</div>' +
       '</div>' +
-      '<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.5rem;line-height:1.5;">' +
-        (descriptions[r.sourceId] || '') +
-      '</div>' +
-      googleWarning +
-      '<div style="margin-top:0.6rem;font-size:0.75rem;color:var(--text-muted);display:flex;gap:0.8rem;flex-wrap:wrap;">' +
+      '<div class="site-desc-text">' + (descriptions[r.sourceId] || '') + '</div>' +
+      googleNote +
+      '<div class="site-meta">' +
         '<span>✈ ' + (params.origin || '') + ' → ' + (params.destination || '') + '</span>' +
         '<span>📅 ' + formatDateDisplay(params.departDate) + '</span>' +
-        '<span>👤 ' + totalPax + ' passenger' + (totalPax > 1 ? 's' : '') + '</span>' +
-        (params.tripType === 'roundtrip'
-          ? '<span>🔄 Return: ' + formatDateDisplay(params.returnDate) + '</span>'
+        '<span>👤 ' + totalPax + ' pax</span>' +
+        (params.tripType === 'roundtrip' && params.returnDate
+          ? '<span>🔄 ' + formatDateDisplay(params.returnDate) + '</span>'
           : '<span>➡ One way</span>') +
-        (params.checkedBaggage ? '<span>🧳 Bag included</span>' : '') +
+        (params.checkedBaggage ? '<span>🧳 Bag</span>' : '') +
+        (params.directOnly ? '<span>⚡ Direct</span>' : '') +
       '</div>' +
     '</div>' +
     '<div class="site-card-right">' +
-      '<div style="font-size:0.72rem;color:var(--text-muted);text-align:center;margin-bottom:0.4rem;">' +
+      '<div class="site-open-label">' +
         (isGoogle ? 'Airports pre-filled<br>Set dates manually' : 'Opens with your<br>search pre-filled') +
       '</div>' +
-      '<button class="book-btn" data-url="' + encodedUrl + '" data-site="' + r.source + '" style="background:' + (r.sourceColor || 'var(--accent)') + ';width:100%;justify-content:center;">' +
-        '<i class="fas fa-external-link-alt"></i> Search on ' + r.source +
+      '<button class="book-btn" ' +
+        'data-url="' + url + '" ' +
+        'data-site="' + r.source + '" ' +
+        'style="background:' + (r.sourceColor || '#e94560') + ';">' +
+        '<i class="fas fa-external-link-alt"></i> ' +
+        'Search on ' + r.source +
       '</button>' +
-      '<div style="font-size:0.68rem;color:var(--text-muted);text-align:center;margin-top:0.3rem;">🔒 Opens privately</div>' +
+      '<div class="private-label">' +
+        '<i class="fas fa-lock"></i> Opens privately' +
+      '</div>' +
     '</div>' +
   '</div>';
-}
-
-// =============================================
-// BOOKING MODAL
-// =============================================
-
-function openBookingModal(url, siteName) {
-  state.currentBookingUrl = url;
-  dom.modalMessage.innerHTML =
-    'Taking you to <strong>' + siteName + '</strong> to complete your booking.<br>' +
-    '<small style="color:var(--text-muted)">For maximum privacy, open in incognito/private mode.</small>';
-  dom.bookingModal.classList.remove('hidden');
-}
-
-function closeModal() {
-  dom.bookingModal.classList.add('hidden');
-  state.currentBookingUrl = '';
-}
-
-// =============================================
-// CALENDAR VIEW
-// =============================================
-
-async function renderCalendarView() {
-  dom.calendarGrid.innerHTML =
-    '<div style="grid-column:1/-1;text-align:center;padding:1rem;color:var(--text-muted);">Calendar view requires a search first.</div>';
 }
 
 // =============================================
@@ -631,18 +602,17 @@ function renderPopularRoutes() {
     '</div>';
   }).join('');
 
-  var cards = dom.popularRoutes.querySelectorAll('.route-card');
-  cards.forEach(function(card) {
+  dom.popularRoutes.querySelectorAll('.route-card').forEach(function(card) {
     card.addEventListener('click', function() {
-      var from = card.dataset.from;
-      var to   = card.dataset.to;
+      var from  = card.dataset.from;
+      var to    = card.dataset.to;
       var fromA = getAirportByIATA(from);
       var toA   = getAirportByIATA(to);
       dom.origin.value      = fromA ? fromA.city + ' (' + from + ')' : from;
       dom.destination.value = toA   ? toA.city   + ' (' + to   + ')' : to;
       state.origin      = from;
       state.destination = to;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({top:0, behavior:'smooth'});
       showToast('Route set: ' + from + ' → ' + to);
     });
   });
@@ -666,7 +636,6 @@ function handleSetAlert() {
     origin:      state.origin,
     destination: state.destination,
     departDate:  state.departDate,
-    cabinClass:  state.cabinClass,
     createdAt:   new Date().toISOString(),
   };
 
@@ -675,24 +644,26 @@ function handleSetAlert() {
   renderAlerts();
   dom.alertEmail.value = '';
   dom.alertPrice.value = '';
-  showToast('🔔 Alert set for ' + formatEUR(price) + ' on ' + state.origin + ' → ' + state.destination);
+  showToast('🔔 Alert set for ' + formatEUR(price));
 }
 
 function renderAlerts() {
   if (!dom.activeAlerts) return;
-  if (!state.alerts.length) {
+  if (!state.alerts || !state.alerts.length) {
     dom.activeAlerts.innerHTML = '<small style="color:var(--text-muted)">No active alerts</small>';
     return;
   }
   dom.activeAlerts.innerHTML = state.alerts.map(function(a) {
     return '<div class="alert-item">' +
-      '<span><strong>' + a.origin + ' → ' + a.destination + '</strong> · Max ' + formatEUR(a.maxPrice) + ' · ' + a.email + '</span>' +
-      '<button class="remove-alert" data-id="' + a.id + '"><i class="fas fa-times"></i></button>' +
+      '<span><strong>' + a.origin + ' → ' + a.destination +
+      '</strong> · Max ' + formatEUR(a.maxPrice) + ' · ' + a.email + '</span>' +
+      '<button class="remove-alert" data-id="' + a.id + '">' +
+        '<i class="fas fa-times"></i>' +
+      '</button>' +
     '</div>';
   }).join('');
 
-  var removeBtns = dom.activeAlerts.querySelectorAll('.remove-alert');
-  removeBtns.forEach(function(btn) {
+  dom.activeAlerts.querySelectorAll('.remove-alert').forEach(function(btn) {
     btn.addEventListener('click', function() {
       state.alerts = state.alerts.filter(function(a) { return a.id !== btn.dataset.id; });
       Storage.set('priceAlerts', state.alerts);
@@ -700,10 +671,6 @@ function renderAlerts() {
       showToast('Alert removed');
     });
   });
-}
-
-function checkPriceAlerts(results) {
-  // No prices to check in redirect-only mode
 }
 
 // =============================================
@@ -741,8 +708,8 @@ function showToast(message, duration) {
 function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/flighthunt/sw.js')
-      .then(function(reg) { console.log('SW registered'); })
-      .catch(function(err) { console.warn('SW failed:', err); });
+      .then(function() { console.log('SW registered'); })
+      .catch(function(e) { console.warn('SW:', e); });
   }
 }
 
@@ -750,31 +717,29 @@ function registerServiceWorker() {
 // INSTALL PROMPT
 // =============================================
 
-var deferredInstallPrompt = null;
+var deferredInstall = null;
 
 function setupInstallPrompt() {
   window.addEventListener('beforeinstallprompt', function(e) {
     e.preventDefault();
-    deferredInstallPrompt = e;
+    deferredInstall = e;
     if (dom.installBtn) dom.installBtn.classList.remove('hidden');
   });
 
   if (dom.installBtn) {
     dom.installBtn.addEventListener('click', async function() {
-      if (!deferredInstallPrompt) return;
-      deferredInstallPrompt.prompt();
-      var result = await deferredInstallPrompt.userChoice;
-      if (result.outcome === 'accepted') {
-        showToast('✅ FlightHunt installed!');
-        dom.installBtn.classList.add('hidden');
-      }
-      deferredInstallPrompt = null;
+      if (!deferredInstall) return;
+      deferredInstall.prompt();
+      var result = await deferredInstall.userChoice;
+      if (result.outcome === 'accepted') showToast('✅ FlightHunt installed!');
+      deferredInstall = null;
+      dom.installBtn.classList.add('hidden');
     });
   }
 }
 
 // =============================================
-// START APP
+// START
 // =============================================
 
 document.addEventListener('DOMContentLoaded', init);
