@@ -1,286 +1,1340 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="theme-color" content="#1a1a2e"/>
-  <title>FlightHunt - Best Flight Prices</title>
-  <link rel="manifest" href="manifest.json"/>
-  <link rel="stylesheet" href="css/style.css"/>
-  <link rel="stylesheet" 
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#1a1a2e"/>
+<title>FlightHunt - Best Flight Prices</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  crossorigin="anonymous"/>
+<style>
+/* ============================================================
+   FLIGHTHUNT — ALL STYLES EMBEDDED
+   Dark mode (default) + Light mode
+   ============================================================ */
+
+/* ---------- CSS VARIABLES ---------- */
+:root {
+  --bg-primary:    #0f0f1a;
+  --bg-secondary:  #1a1a2e;
+  --bg-card:       #16213e;
+  --bg-input:      #0d1b3e;
+  --accent:        #e94560;
+  --accent-hover:  #c73652;
+  --accent-2:      #0f3460;
+  --text-primary:  #eaeaea;
+  --text-secondary:#a0a0b0;
+  --text-muted:    #606070;
+  --border:        #2a2a4a;
+  --success:       #4caf50;
+  --warning:       #ff9800;
+  --radius:        12px;
+  --radius-sm:     8px;
+  --shadow:        0 8px 32px rgba(0,0,0,0.4);
+  --transition:    all 0.3s ease;
+}
+
+/* ---------- LIGHT MODE ---------- */
+[data-theme="light"] {
+  --bg-primary:    #f0f4ff;
+  --bg-secondary:  #ffffff;
+  --bg-card:       #ffffff;
+  --bg-input:      #f5f7ff;
+  --accent:        #e94560;
+  --accent-hover:  #c73652;
+  --accent-2:      #3d5af1;
+  --text-primary:  #1a1a2e;
+  --text-secondary:#4a4a6a;
+  --text-muted:    #7878a0;
+  --border:        #dde3f5;
+  --success:       #2a9d5c;
+  --warning:       #e07b00;
+  --shadow:        0 4px 20px rgba(50,70,180,0.08);
+}
+[data-theme="light"] body {
+  background: linear-gradient(160deg, #f0f4ff 0%, #e8eeff 100%);
+}
+[data-theme="light"] .header {
+  background: rgba(255,255,255,0.97);
+  box-shadow: 0 2px 20px rgba(50,70,180,0.08);
+  border-bottom: 1px solid #e0e8ff;
+}
+[data-theme="light"] .search-card,
+[data-theme="light"] .alert-section,
+[data-theme="light"] .popular-routes,
+[data-theme="light"] .loading-state,
+[data-theme="light"] .calendar-view {
+  background: #ffffff;
+  border-color: #e0e8ff;
+  box-shadow: 0 4px 20px rgba(50,70,180,0.07);
+}
+[data-theme="light"] .result-card {
+  background: #ffffff;
+  border-color: #e0e8ff;
+  box-shadow: 0 2px 12px rgba(50,70,180,0.06);
+}
+[data-theme="light"] .result-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 6px 24px rgba(233,69,96,0.12);
+}
+[data-theme="light"] .best-deal-card {
+  background: linear-gradient(135deg,#fff 0%,#f0fff6 100%) !important;
+  border-color: #2a9d5c !important;
+  box-shadow: 0 4px 20px rgba(42,157,92,0.12) !important;
+}
+[data-theme="light"] .good-deal-card {
+  border-color: #e07b00 !important;
+}
+[data-theme="light"] .input-group input,
+[data-theme="light"] .input-group select {
+  background: #f5f7ff;
+  border-color: #dde3f5;
+  color: #1a1a2e;
+}
+[data-theme="light"] .input-group input:focus,
+[data-theme="light"] .input-group select:focus {
+  border-color: var(--accent);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(233,69,96,0.1);
+}
+[data-theme="light"] .input-group label { color: #4a4a6a; }
+[data-theme="light"] .input-group input::placeholder { color: #aab0cc; }
+[data-theme="light"] .passenger-selector {
+  background: #f5f7ff;
+  border-color: #dde3f5;
+}
+[data-theme="light"] .pax-item { color: #1a1a2e; }
+[data-theme="light"] .count-btn {
+  background: #3d5af1;
+  color: white;
+}
+[data-theme="light"] .count-btn:hover { background: var(--accent); }
+[data-theme="light"] .toggles {
+  background: #f5f7ff;
+  border-color: #dde3f5;
+}
+[data-theme="light"] .toggle-label { color: #4a4a6a; }
+[data-theme="light"] .slider { background: #c8d0e8; }
+[data-theme="light"] .radio-pill span {
+  background: #f5f7ff;
+  border-color: #dde3f5;
+  color: #4a4a6a;
+}
+[data-theme="light"] .radio-pill span:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #fff0f3;
+}
+[data-theme="light"] .swap-btn {
+  background: #3d5af1;
+  color: white;
+  border-color: #3d5af1;
+}
+[data-theme="light"] .swap-btn:hover { background: var(--accent); }
+[data-theme="light"] .airport-dropdown {
+  background: #ffffff;
+  border-color: #dde3f5;
+  box-shadow: 0 8px 32px rgba(50,70,180,0.12);
+}
+[data-theme="light"] .airport-item { border-bottom-color: #f0f4ff; }
+[data-theme="light"] .airport-item:hover { background: #f0f4ff; }
+[data-theme="light"] .airport-item .city-name { color: #1a1a2e; }
+[data-theme="light"] .airport-item .country-name { color: #7878a0; }
+[data-theme="light"] .filter-btn {
+  background: #f5f7ff;
+  border-color: #dde3f5;
+  color: #4a4a6a;
+}
+[data-theme="light"] .filter-btn:hover,
+[data-theme="light"] .filter-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+[data-theme="light"] #maxStopsFilter {
+  background: #f5f7ff;
+  border-color: #dde3f5;
+  color: #4a4a6a;
+}
+[data-theme="light"] .view-btn {
+  background: #f5f7ff;
+  border-color: #dde3f5;
+  color: #4a4a6a;
+}
+[data-theme="light"] .view-btn.active {
+  background: #3d5af1;
+  border-color: #3d5af1;
+  color: white;
+}
+[data-theme="light"] .route-card {
+  background: #f5f7ff;
+  border-color: #dde3f5;
+}
+[data-theme="light"] .route-card:hover {
+  border-color: var(--accent);
+  background: #fff0f3;
+}
+[data-theme="light"] .alert-form input {
+  background: #f5f7ff;
+  border-color: #dde3f5;
+  color: #1a1a2e;
+}
+[data-theme="light"] .alert-form input::placeholder { color: #aab0cc; }
+[data-theme="light"] .alert-form button { background: #3d5af1; }
+[data-theme="light"] .alert-form button:hover { background: var(--accent); }
+[data-theme="light"] .alert-item {
+  background: #f5f7ff;
+  border-color: #dde3f5;
+  color: #1a1a2e;
+}
+[data-theme="light"] .site-status { color: #4a4a6a; }
+[data-theme="light"] .site-status.searching { color: #e07b00; border-color: #e07b00; }
+[data-theme="light"] .site-status.done { color: #2a9d5c; border-color: #2a9d5c; }
+[data-theme="light"] .spinner { border-color: #e0e8ff; border-top-color: var(--accent); }
+[data-theme="light"] .search-progress { background: #e0e8ff; }
+[data-theme="light"] .site-name-text { color: #1a1a2e; }
+[data-theme="light"] .site-note-text { color: #7878a0; }
+[data-theme="light"] .site-desc-text { color: #4a4a6a; }
+[data-theme="light"] .site-meta { color: #7878a0; }
+[data-theme="light"] .site-open-label { color: #7878a0; }
+[data-theme="light"] .private-label { color: #7878a0; }
+[data-theme="light"] .privacy-notice { color: #7878a0; }
+[data-theme="light"] .footer {
+  background: rgba(255,255,255,0.9);
+  border-top: 1px solid #e0e8ff;
+  color: #7878a0;
+}
+[data-theme="light"] .toast {
+  background: #ffffff;
+  border-color: #e0e8ff;
+  color: #1a1a2e;
+  box-shadow: 0 4px 20px rgba(50,70,180,0.12);
+}
+[data-theme="light"] .filter-bar h2 { color: #1a1a2e; }
+[data-theme="light"] .alert-section h3 { color: #4a4a6a; }
+[data-theme="light"] .popular-routes h3 { color: #4a4a6a; }
+[data-theme="light"] .header-actions button {
+  background: #f5f7ff;
+  border-color: #dde3f5;
+  color: #4a4a6a;
+}
+[data-theme="light"] .header-actions button:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* ---------- RESET ---------- */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--accent-2); border-radius: 3px; }
+.hidden { display: none !important; }
+
+/* ---------- HEADER ---------- */
+.header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.3px;
+}
+.logo i { font-size: 1.3rem; }
+.header-actions { display: flex; gap: 0.5rem; }
+.header-actions button {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.header-actions button:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+/* ---------- MAIN ---------- */
+.main-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+}
+
+/* ---------- SEARCH CARD ---------- */
+.search-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.6rem;
+  box-shadow: var(--shadow);
+}
+
+/* ---------- TRIP TYPE ---------- */
+.trip-type-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.3rem;
+}
+.radio-pill input { display: none; }
+.radio-pill span {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1.1rem;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: var(--transition);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.radio-pill input:checked + span {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  font-weight: 700;
+}
+.radio-pill span:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---------- INPUT GROUPS ---------- */
+.airports-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0.8rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+.dates-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+.extra-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+}
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  position: relative;
+}
+.input-group label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.input-group input,
+.input-group select {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  color: var(--text-primary);
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  transition: var(--transition);
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.input-group input:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(233,69,96,0.15);
+}
+.input-group input::placeholder { color: var(--text-muted); }
+
+/* ---------- SWAP ---------- */
+.swap-btn {
+  background: var(--accent-2);
+  border: none;
+  color: white;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.9rem;
+  align-self: flex-end;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.swap-btn:hover {
+  background: var(--accent);
+  transform: rotate(180deg);
+}
+
+/* ---------- AIRPORT DROPDOWN ---------- */
+.airport-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  z-index: 500;
+  max-height: 220px;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+}
+.airport-item {
+  padding: 0.65rem 0.9rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.87rem;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.airport-item:last-child { border-bottom: none; }
+.airport-item:hover { background: var(--accent-2); }
+.airport-item .iata {
+  font-weight: 800;
+  color: var(--accent);
+  font-size: 0.88rem;
+  background: rgba(233,69,96,0.1);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.airport-item .city-name {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.88rem;
+}
+.airport-item .country-name {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+/* ---------- PASSENGERS ---------- */
+.passenger-selector {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.9rem;
+}
+.pax-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+.counter {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.count-btn {
+  background: var(--accent-2);
+  border: none;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.count-btn:hover { background: var(--accent); }
+
+/* ---------- TOGGLES ---------- */
+.luggage-group { grid-column: 1 / -1; }
+.toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.9rem;
+}
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+.toggle-switch input { display: none; }
+.slider {
+  width: 38px;
+  height: 21px;
+  background: var(--border);
+  border-radius: 11px;
+  position: relative;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.slider::after {
+  content: '';
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  background: white;
+  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+  transition: var(--transition);
+}
+.toggle-switch input:checked + .slider { background: var(--accent); }
+.toggle-switch input:checked + .slider::after { left: 20px; }
+.toggle-label {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* ---------- SEARCH BUTTON ---------- */
+.search-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent) 0%, #c73652 100%);
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  transition: var(--transition);
+  letter-spacing: 0.3px;
+  margin-top: 0.3rem;
+}
+.search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(233,69,96,0.4);
+}
+.search-btn:active { transform: translateY(0); }
+.search-btn.loading { opacity: 0.8; pointer-events: none; }
+.privacy-notice {
+  text-align: center;
+  margin-top: 0.6rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+/* ---------- ALERT SECTION ---------- */
+.alert-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+  box-shadow: var(--shadow);
+}
+.alert-section h3 {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+}
+.alert-form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.alert-form input {
+  flex: 1;
+  min-width: 130px;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  color: var(--text-primary);
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+.alert-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.alert-form button {
+  background: var(--accent-2);
+  border: none;
+  color: white;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: var(--transition);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.alert-form button:hover { background: var(--accent); }
+.active-alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+.alert-item {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.8rem;
+  font-size: 0.82rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-secondary);
+}
+.remove-alert {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.1rem 0.3rem;
+  transition: var(--transition);
+}
+.remove-alert:hover { transform: scale(1.2); }
+
+/* ---------- RESULTS ---------- */
+.results-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+.filter-bar h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.filters {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.filter-btn {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.filter-btn.active,
+.filter-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+#maxStopsFilter {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  padding: 0.4rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+/* ---------- LOADING ---------- */
+.loading-state {
+  text-align: center;
+  padding: 2rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid var(--border);
+  border-top: 3px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.search-progress {
+  width: 100%;
+  background: var(--border);
+  border-radius: 10px;
+  height: 6px;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: 10px;
+  width: 0%;
+  transition: width 0.5s ease;
+}
+.site-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+  margin-top: 0.8rem;
+}
+.site-status {
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.site-status.searching { border-color: var(--warning); color: var(--warning); }
+.site-status.done      { border-color: var(--success); color: var(--success); }
+
+/* ---------- RESULT CARDS ---------- */
+.results-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.result-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.3rem;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+.result-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(233,69,96,0.15);
+}
+
+/* Best Deal */
+.best-deal-card {
+  border-color: var(--success) !important;
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(76,175,80,0.06) 100%);
+}
+.best-deal-card:hover {
+  border-color: var(--success) !important;
+  box-shadow: 0 8px 24px rgba(76,175,80,0.2) !important;
+}
+.best-deal-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: linear-gradient(135deg, #2a9d5c, #4caf50);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.25rem 0.9rem;
+  border-radius: 0 var(--radius) 0 var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  letter-spacing: 0.3px;
+}
+
+/* Good Deal */
+.good-deal-card { border-color: var(--warning) !important; }
+.good-deal-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: linear-gradient(135deg, #e07b00, #ff9800);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.25rem 0.9rem;
+  border-radius: 0 var(--radius) 0 var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.site-card-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.site-icon-name {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.site-name-text {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+.site-note-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.site-desc-text {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.site-meta {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+.site-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.site-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 175px;
+}
+.site-open-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.4;
+}
+.book-btn {
+  color: white;
+  border: none;
+  padding: 0.75rem 1.2rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.88rem;
+  transition: var(--transition);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  justify-content: center;
+}
+.book-btn:hover {
+  filter: brightness(1.15);
+  transform: scale(1.03);
+}
+.private-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* ---------- VIEW TOGGLES ---------- */
+.view-toggles {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+.view-btn {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.view-btn.active {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  color: white;
+}
+
+/* ---------- CALENDAR ---------- */
+.calendar-view {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+.calendar-view h3 {
+  font-size: 0.95rem;
+  margin-bottom: 0.6rem;
+  color: var(--text-secondary);
+}
+#calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.3rem;
+}
+.cal-cell {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem;
+  text-align: center;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.cal-cell:hover { border-color: var(--accent); }
+.cal-cell.cheapest {
+  border-color: var(--success);
+  background: rgba(76,175,80,0.1);
+}
+.cal-price { color: var(--accent); font-weight: 700; }
+.cal-date { color: var(--text-muted); font-size: 0.7rem; }
+
+/* ---------- POPULAR ROUTES ---------- */
+.popular-routes {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.3rem;
+  box-shadow: var(--shadow);
+}
+.popular-routes h3 {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+}
+.routes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  gap: 0.6rem;
+}
+.route-card {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+}
+.route-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(233,69,96,0.15);
+}
+.route-from-to {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+.route-price {
+  font-size: 0.82rem;
+  color: var(--accent);
+  font-weight: 700;
+  margin-top: 0.2rem;
+}
+.route-airline {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+/* ---------- TOAST ---------- */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem 1.5rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  box-shadow: var(--shadow);
+  z-index: 2000;
+  white-space: nowrap;
+  animation: toastIn 0.3s ease;
+}
+@keyframes toastIn {
+  from { opacity:0; transform: translateX(-50%) translateY(10px); }
+  to   { opacity:1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ---------- FOOTER ---------- */
+.footer {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.footer a {
+  color: var(--accent);
+  text-decoration: none;
+  margin-left: 0.3rem;
+}
+.footer a:hover { text-decoration: underline; }
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 700px) {
+  .airports-row {
+    grid-template-columns: 1fr;
+    position: relative;
+    padding-right: 50px;
+  }
+  .swap-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+  }
+  .dates-row { grid-template-columns: 1fr; }
+  .extra-row { grid-template-columns: 1fr; }
+  .result-card { grid-template-columns: 1fr; }
+  .site-card-right { width: 100%; }
+  .book-btn { width: 100%; }
+  .routes-grid { grid-template-columns: repeat(2, 1fr); }
+  .filter-bar { flex-direction: column; align-items: flex-start; }
+  .view-toggles { justify-content: flex-start; }
+}
+@media (max-width: 420px) {
+  .radio-pill span { padding: 0.35rem 0.7rem; font-size: 0.78rem; }
+  .search-card { padding: 1rem; }
+  .main-container { padding: 1rem 0.75rem 3rem; }
+  .trip-type-row { gap: 0.3rem; }
+}
+</style>
 </head>
 <body>
-  <div id="app">
+<div id="app">
 
-    <!-- HEADER -->
-    <header class="header">
-      <div class="logo">
-        <i class="fas fa-paper-plane"></i>
-        <span>FlightHunt</span>
-      </div>
-      <div class="header-actions">
-        <button id="darkToggle" title="Toggle theme">
-          <i class="fas fa-moon"></i>
-        </button>
-        <button id="installBtn" class="hidden" title="Install App">
-          <i class="fas fa-download"></i>
-        </button>
-      </div>
-    </header>
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <i class="fas fa-paper-plane"></i>
+    <span>FlightHunt</span>
+  </div>
+  <div class="header-actions">
+    <button id="darkToggle" title="Toggle theme">
+      <i class="fas fa-moon"></i>
+    </button>
+    <button id="installBtn" class="hidden" title="Install App">
+      <i class="fas fa-download"></i>
+    </button>
+  </div>
+</header>
 
-    <!-- MAIN SEARCH CARD -->
-    <main class="main-container">
-      <div class="search-card">
+<!-- MAIN -->
+<main class="main-container">
 
-        <!-- TRIP TYPE -->
-        <div class="trip-type-row">
-          <label class="radio-pill">
-            <input type="radio" name="tripType" value="roundtrip" checked/>
-            <span><i class="fas fa-exchange-alt"></i> Round Trip</span>
-          </label>
-          <label class="radio-pill">
-            <input type="radio" name="tripType" value="oneway"/>
-            <span><i class="fas fa-arrow-right"></i> One Way</span>
-          </label>
-          <label class="radio-pill">
-            <input type="radio" name="tripType" value="multicity"/>
-            <span><i class="fas fa-route"></i> Multi-City</span>
-          </label>
+  <!-- SEARCH CARD -->
+  <div class="search-card">
+
+    <!-- TRIP TYPE -->
+    <div class="trip-type-row">
+      <label class="radio-pill">
+        <input type="radio" name="tripType" value="roundtrip" checked/>
+        <span><i class="fas fa-exchange-alt"></i> Round Trip</span>
+      </label>
+      <label class="radio-pill">
+        <input type="radio" name="tripType" value="oneway"/>
+        <span><i class="fas fa-arrow-right"></i> One Way</span>
+      </label>
+      <label class="radio-pill">
+        <input type="radio" name="tripType" value="multicity"/>
+        <span><i class="fas fa-route"></i> Multi-City</span>
+      </label>
+    </div>
+
+    <form id="searchForm">
+
+      <!-- AIRPORTS -->
+      <div class="airports-row">
+        <div class="input-group">
+          <label><i class="fas fa-plane-departure"></i> From</label>
+          <input type="text" id="origin"
+            placeholder="City or Airport (e.g. BER)"
+            autocomplete="off"/>
+          <div class="airport-dropdown hidden" id="originDropdown"></div>
         </div>
 
-        <!-- FLIGHT FORM -->
-        <form id="searchForm">
+        <button type="button" id="swapBtn" class="swap-btn" title="Swap airports">
+          <i class="fas fa-exchange-alt"></i>
+        </button>
 
-          <!-- AIRPORTS ROW -->
-          <div class="airports-row">
-            <div class="input-group">
-              <label><i class="fas fa-plane-departure"></i> From</label>
-              <input type="text" id="origin" placeholder="City or Airport (e.g. BER)"
-                autocomplete="off" list="originSuggestions" required/>
-              <datalist id="originSuggestions"></datalist>
-              <div class="airport-dropdown hidden" id="originDropdown"></div>
-            </div>
+        <div class="input-group">
+          <label><i class="fas fa-plane-arrival"></i> To</label>
+          <input type="text" id="destination"
+            placeholder="City or Airport (e.g. DEL)"
+            autocomplete="off"/>
+          <div class="airport-dropdown hidden" id="destDropdown"></div>
+        </div>
+      </div>
 
-            <button type="button" id="swapBtn" class="swap-btn" title="Swap airports">
-              <i class="fas fa-exchange-alt"></i>
-            </button>
+      <!-- DATES -->
+      <div class="dates-row">
+        <div class="input-group">
+          <label><i class="fas fa-calendar-alt"></i> Departure</label>
+          <input type="date" id="departDate"/>
+        </div>
+        <div class="input-group" id="returnDateGroup">
+          <label><i class="fas fa-calendar-check"></i> Return</label>
+          <input type="date" id="returnDate"/>
+        </div>
+      </div>
 
-            <div class="input-group">
-              <label><i class="fas fa-plane-arrival"></i> To</label>
-              <input type="text" id="destination" placeholder="City or Airport (e.g. DEL)"
-                autocomplete="off" list="destSuggestions" required/>
-              <datalist id="destSuggestions"></datalist>
-              <div class="airport-dropdown hidden" id="destDropdown"></div>
-            </div>
-          </div>
-
-          <!-- DATES ROW -->
-          <div class="dates-row">
-            <div class="input-group">
-              <label><i class="fas fa-calendar-alt"></i> Departure</label>
-              <input type="date" id="departDate" required/>
-            </div>
-            <div class="input-group" id="returnDateGroup">
-              <label><i class="fas fa-calendar-check"></i> Return</label>
-              <input type="date" id="returnDate"/>
-            </div>
-          </div>
-
-          <!-- PASSENGERS & CLASS ROW -->
-          <div class="extra-row">
-            <div class="input-group">
-              <label><i class="fas fa-users"></i> Passengers</label>
-              <div class="passenger-selector">
-                <div class="pax-item">
-                  <span>Adults</span>
-                  <div class="counter">
-                    <button type="button" class="count-btn" data-type="adults" data-action="minus">−</button>
-                    <span id="adultsCount">1</span>
-                    <button type="button" class="count-btn" data-type="adults" data-action="plus">+</button>
-                  </div>
-                </div>
-                <div class="pax-item">
-                  <span>Children</span>
-                  <div class="counter">
-                    <button type="button" class="count-btn" data-type="children" data-action="minus">−</button>
-                    <span id="childrenCount">0</span>
-                    <button type="button" class="count-btn" data-type="children" data-action="plus">+</button>
-                  </div>
-                </div>
+      <!-- PASSENGERS + CLASS -->
+      <div class="extra-row">
+        <div class="input-group">
+          <label><i class="fas fa-users"></i> Passengers</label>
+          <div class="passenger-selector">
+            <div class="pax-item">
+              <span>Adults</span>
+              <div class="counter">
+                <button type="button" class="count-btn"
+                  data-type="adults" data-action="minus">−</button>
+                <span id="adultsCount">1</span>
+                <button type="button" class="count-btn"
+                  data-type="adults" data-action="plus">+</button>
               </div>
             </div>
-
-            <div class="input-group">
-              <label><i class="fas fa-chair"></i> Cabin Class</label>
-              <select id="cabinClass">
-                <option value="economy">Economy</option>
-                <option value="premium_economy">Premium Economy</option>
-                <option value="business">Business</option>
-                <option value="first">First Class</option>
-              </select>
-            </div>
-
-            <!-- LUGGAGE TOGGLE -->
-            <div class="input-group luggage-group">
-              <label><i class="fas fa-suitcase-rolling"></i> Options</label>
-              <div class="toggles">
-                <label class="toggle-switch">
-                  <input type="checkbox" id="checkedBaggage"/>
-                  <span class="slider"></span>
-                  <span class="toggle-label">Checked Baggage</span>
-                </label>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="directOnly"/>
-                  <span class="slider"></span>
-                  <span class="toggle-label">Direct Flights Only</span>
-                </label>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="flexDates"/>
-                  <span class="slider"></span>
-                  <span class="toggle-label">Flexible Dates (±3 days)</span>
-                </label>
+            <div class="pax-item">
+              <span>Children</span>
+              <div class="counter">
+                <button type="button" class="count-btn"
+                  data-type="children" data-action="minus">−</button>
+                <span id="childrenCount">0</span>
+                <button type="button" class="count-btn"
+                  data-type="children" data-action="plus">+</button>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- SEARCH BUTTON -->
-          <button type="submit" class="search-btn" id="searchBtn">
-            <i class="fas fa-search"></i>
-            <span>Search All Sites (Private Mode)</span>
-          </button>
+        <div class="input-group">
+          <label><i class="fas fa-chair"></i> Cabin Class</label>
+          <select id="cabinClass">
+            <option value="economy">Economy</option>
+            <option value="premium_economy">Premium Economy</option>
+            <option value="business">Business</option>
+            <option value="first">First Class</option>
+          </select>
+        </div>
 
-          <!-- PRIVACY NOTICE -->
-          <div class="privacy-notice">
-            <i class="fas fa-user-secret"></i>
-            Searching in incognito mode • Cookies cleared • No tracking
+        <div class="input-group luggage-group">
+          <label><i class="fas fa-suitcase-rolling"></i> Options</label>
+          <div class="toggles">
+            <label class="toggle-switch">
+              <input type="checkbox" id="checkedBaggage"/>
+              <span class="slider"></span>
+              <span class="toggle-label">Checked Baggage</span>
+            </label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="directOnly"/>
+              <span class="slider"></span>
+              <span class="toggle-label">Direct Flights Only</span>
+            </label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="flexDates"/>
+              <span class="slider"></span>
+              <span class="toggle-label">Flexible Dates (±3 days)</span>
+            </label>
           </div>
-        </form>
+        </div>
       </div>
 
-      <!-- PRICE ALERT SECTION -->
-      <div class="alert-section">
-        <h3><i class="fas fa-bell"></i> Price Alerts</h3>
-        <div class="alert-form">
-          <input type="email" id="alertEmail" placeholder="your@email.com"/>
-          <input type="number" id="alertPrice" placeholder="Max price in €"/>
-          <button type="button" id="setAlertBtn">
-            <i class="fas fa-bell"></i> Set Alert
-          </button>
-        </div>
-        <div id="activeAlerts" class="active-alerts"></div>
+      <!-- SEARCH BUTTON -->
+      <button type="submit" class="search-btn" id="searchBtn">
+        <i class="fas fa-search"></i>
+        <span>Search All Sites (Private Mode)</span>
+      </button>
+
+      <div class="privacy-notice">
+        <i class="fas fa-user-secret"></i>
+        Searching in incognito mode • Cookies cleared • No tracking
       </div>
 
-      <!-- RESULTS SECTION -->
-      <section id="resultsSection" class="results-section hidden">
+    </form>
+  </div>
 
-        <!-- FILTER BAR -->
-        <div class="filter-bar">
-          <h2 id="resultsTitle">Search Results</h2>
-          <div class="filters">
-            <button class="filter-btn active" data-sort="price">
-              <i class="fas fa-euro-sign"></i> Price
-            </button>
-            <button class="filter-btn" data-sort="duration">
-              <i class="fas fa-clock"></i> Duration
-            </button>
-            <button class="filter-btn" data-sort="stops">
-              <i class="fas fa-map-marker-alt"></i> Stops
-            </button>
-            <select id="maxStopsFilter">
-              <option value="any">Any stops</option>
-              <option value="0">Direct only</option>
-              <option value="1">Max 1 stop</option>
-              <option value="2">Max 2 stops</option>
-            </select>
-          </div>
-        </div>
+  <!-- PRICE ALERTS -->
+  <div class="alert-section">
+    <h3><i class="fas fa-bell"></i> Price Alerts</h3>
+    <div class="alert-form">
+      <input type="email" id="alertEmail" placeholder="your@email.com"/>
+      <input type="number" id="alertPrice" placeholder="Max price in €"/>
+      <button type="button" id="setAlertBtn">
+        <i class="fas fa-bell"></i> Set Alert
+      </button>
+    </div>
+    <div id="activeAlerts" class="active-alerts">
+      <small style="color:var(--text-muted)">No active alerts</small>
+    </div>
+  </div>
 
-        <!-- LOADING STATE -->
-        <div id="loadingState" class="loading-state hidden">
-          <div class="spinner"></div>
-          <p id="loadingText">Searching across all sites...</p>
-          <div class="search-progress">
-            <div id="progressBar" class="progress-bar"></div>
-          </div>
-          <div id="siteStatuses" class="site-statuses"></div>
-        </div>
+  <!-- RESULTS -->
+  <section id="resultsSection" class="results-section hidden">
 
-        <!-- RESULTS GRID -->
-        <div id="resultsGrid" class="results-grid"></div>
-
-        <!-- CALENDAR VIEW -->
-        <div id="calendarView" class="calendar-view hidden">
-          <h3>Price Calendar</h3>
-          <div id="calendarGrid"></div>
-        </div>
-
-        <!-- VIEW TOGGLES -->
-        <div class="view-toggles">
-          <button id="listViewBtn" class="view-btn active">
-            <i class="fas fa-list"></i> List
-          </button>
-          <button id="calendarViewBtn" class="view-btn">
-            <i class="fas fa-calendar"></i> Calendar
-          </button>
-        </div>
-
-      </section>
-
-      <!-- POPULAR ROUTES -->
-      <section class="popular-routes">
-        <h3><i class="fas fa-fire"></i> Popular Routes</h3>
-        <div class="routes-grid" id="popularRoutes"></div>
-      </section>
-
-    </main>
-
-    <!-- FOOTER -->
-    <footer class="footer">
-      <p>
-        <i class="fas fa-user-secret"></i> All searches done in private mode
-        • Prices in EUR • 
-        <a href="https://github.com/yourusername/flighthunt" target="_blank">
-          <i class="fab fa-github"></i> GitHub
-        </a>
-      </p>
-    </footer>
-
-    <!-- MODAL for booking redirect -->
-    <div id="bookingModal" class="modal hidden">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3><i class="fas fa-external-link-alt"></i> Opening Booking Site</h3>
-          <button id="closeModal"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body">
-          <p id="modalMessage">Taking you to the booking page...</p>
-          <div class="modal-warning">
-            <i class="fas fa-info-circle"></i>
-            <small>
-              Opening in a new tab. The site will open without tracking cookies. 
-              You'll be taken directly to the search results page.
-            </small>
-          </div>
-          <div class="modal-actions">
-            <button id="confirmBooking" class="confirm-btn">
-              <i class="fas fa-external-link-alt"></i> Open Booking Page
-            </button>
-            <button id="copyLink" class="copy-btn">
-              <i class="fas fa-copy"></i> Copy Link
-            </button>
-          </div>
-        </div>
+    <div class="filter-bar">
+      <h2 id="resultsTitle">Search Results</h2>
+      <div class="filters">
+        <button class="filter-btn active" data-sort="price">
+          <i class="fas fa-euro-sign"></i> Price
+        </button>
+        <button class="filter-btn" data-sort="duration">
+          <i class="fas fa-clock"></i> Duration
+        </button>
+        <select id="maxStopsFilter">
+          <option value="any">Any stops</option>
+          <option value="0">Direct only</option>
+          <option value="1">Max 1 stop</option>
+        </select>
       </div>
     </div>
 
-    <!-- TOAST NOTIFICATION -->
-    <div id="toast" class="toast hidden"></div>
+    <div id="loadingState" class="loading-state hidden">
+      <div class="spinner"></div>
+      <p id="loadingText">Searching across all sites privately...</p>
+      <div class="search-progress">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+      <div id="siteStatuses" class="site-statuses"></div>
+    </div>
 
-  </div><!-- end #app -->
+    <div class="view-toggles">
+      <button id="listViewBtn" class="view-btn active">
+        <i class="fas fa-list"></i> List
+      </button>
+      <button id="calendarViewBtn" class="view-btn">
+        <i class="fas fa-calendar"></i> Calendar
+      </button>
+    </div>
 
-  <script src="js/utils.js"></script>
-  <script src="js/scrapers.js"></script>
-  <script src="js/app.js"></script>
+    <div id="resultsGrid" class="results-grid"></div>
+
+    <div id="calendarView" class="calendar-view hidden">
+      <h3><i class="fas fa-calendar-alt"></i> Price Calendar</h3>
+      <div id="calendarGrid"></div>
+    </div>
+
+  </section>
+
+  <!-- POPULAR ROUTES -->
+  <section class="popular-routes">
+    <h3><i class="fas fa-fire"></i> Popular Routes</h3>
+    <div class="routes-grid" id="popularRoutes"></div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>
+    <i class="fas fa-user-secret"></i>
+    All searches in private mode • Prices in EUR •
+    <a href="https://github.com/movliksenjaliya/flighthunt" target="_blank">
+      <i class="fab fa-github"></i> GitHub
+    </a>
+  </p>
+</footer>
+
+<!-- TOAST -->
+<div id="toast" class="toast hidden"></div>
+
+</div>
+
+<!-- SCRIPTS — capital JS to match your repo folders -->
+<script src="JS/utils.js"></script>
+<script src="JS/scrapers.js"></script>
+<script src="JS/app.js"></script>
 </body>
 </html>
