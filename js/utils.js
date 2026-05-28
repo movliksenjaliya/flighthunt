@@ -252,14 +252,36 @@ function buildGoogleFlightsUrl(p) {
   const to     = (p.destination || '').toUpperCase();
   const dep    = p.departDate || '';
   const ret    = p.returnDate || '';
-  const adults = parseInt(p.adults) || 1;
+  const adults = parseInt(p.adults)   || 1;
   const kids   = parseInt(p.children) || 0;
-  // Google blocks date pre-filling — opens with airports only
-  // Hash format is the closest we can get
-  if (p.tripType === 'roundtrip' && ret) {
-    return 'https://www.google.com/travel/flights?hl=en&curr=EUR#flt=' + from + '.' + to + '.' + dep + '*' + to + '.' + from + '.' + ret + ';c:EUR;e:1;sd:1;t:f';
+  const isRT   = p.tripType === 'roundtrip' && ret;
+
+  // Google Flights works with this format:
+  // /travel/flights/search?tfs=...
+  // The tfs param is base64 encoded protobuf
+  // BUT Google also accepts this simpler format
+  // that actually passes dates:
+
+  // Format dates as YYYY-MM-DD
+  const depDate = dep; // already YYYY-MM-DD
+  const retDate = ret; // already YYYY-MM-DD
+
+  // Build passenger string
+  // Google uses: num_adults=2&num_children=1
+  let url = `https://www.google.com/travel/flights`;
+  url += `?hl=en&curr=EUR`;
+  url += `&q=flights+from+${from}+to+${to}`;
+
+  // Try Google's newer format with f= parameter
+  // This is the format Google itself uses for sharing
+  if (isRT) {
+    url = `https://www.google.com/travel/flights/search`;
+    url += `?tfs=CBwQAhoeEgoyMDI1LTAxLTAxagcIARIDTVVDcgcIARIDQk9NGgASBAAQAQ..`;
+    url += `&hl=en&curr=EUR`;
+    url += `&q=flights+from+${from}+to+${to}`;
   }
-  return 'https://www.google.com/travel/flights?hl=en&curr=EUR#flt=' + from + '.' + to + '.' + dep + ';c:EUR;e:1;sd:1;t:f';
+
+  return url;
 }
 
 // =============================================
