@@ -287,10 +287,28 @@ function buildMomondoUrl(p) {
 }
 
 function buildGoogleFlightsUrl(p) {
-  var from = (p.origin      || '').toUpperCase();
-  var to   = (p.destination || '').toUpperCase();
-  var dep  = p.departDate   || '';
-  return 'https://www.google.de/travel/flights?q=Fluege+von+' + from + '+nach+' + to + '+am+' + dep + '&hl=de&curr=EUR';
+  var from   = (p.origin      || '').toUpperCase();
+  var to     = (p.destination || '').toUpperCase();
+  var dep    = p.departDate || '';
+  var ret    = p.returnDate || '';
+  var adults = parseInt(p.adults) || 1;
+
+  // Google Flights search URL that pre-fills airports and dates
+  // Using the /search endpoint with readable parameters
+  var params = 'hl=de&curr=EUR' +
+               '&q=Flüge+' + from + '+' + to;
+
+  // Use the hash format which works for pre-filling
+  if (p.tripType === 'roundtrip' && ret) {
+    return 'https://www.google.de/travel/flights?hl=de&curr=EUR' +
+           '#flt=' + from + '.' + to + '.' + dep +
+           '*' + to + '.' + from + '.' + ret +
+           ';c:EUR;e:1;sd:1;t:f';
+  }
+
+  return 'https://www.google.de/travel/flights?hl=de&curr=EUR' +
+         '#flt=' + from + '.' + to + '.' + dep +
+         ';c:EUR;e:1;sd:1;t:f';
 }
 
 function buildBookingUrl(p) {
@@ -319,30 +337,44 @@ function buildBookingUrl(p) {
 }
 
 function buildLastminuteUrl(p) {
-  var dep    = p.departDate || '';
-  var ret    = p.returnDate || '';
+  var dep    = (p.departDate || '').replace(/-/g, '');
+  var ret    = (p.returnDate || '').replace(/-/g, '');
   var from   = (p.origin      || '').toUpperCase();
   var to     = (p.destination || '').toUpperCase();
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
   var isRT   = p.tripType === 'roundtrip' && ret;
 
-  // lastminute.de correct working URL
-  var params = 'departing='  + from +
-               '&arriving='  + to +
-               '&departdate='+ dep +
-               '&adults='    + adults +
-               '&children='  + kids +
-               '&infants=0' +
-               '&currency=EUR';
+  var base = 'https://www.lastminute.de/s/flights/search/v2/results?';
 
   if (isRT) {
-    params += '&returndate=' + ret + '&triptype=return';
-  } else {
-    params += '&triptype=oneway';
+    var params =
+      'itinerary.path%5B0%5D.departure=' + from +
+      '&itinerary.path%5B0%5D.arrival='  + to +
+      '&itinerary.path%5B0%5D.date='     + dep +
+      '&itinerary.path%5B1%5D.departure='+ to +
+      '&itinerary.path%5B1%5D.arrival='  + from +
+      '&itinerary.path%5B1%5D.date='     + ret +
+      '&itinerary.type=ROUND_TRIP' +
+      '&passengers.adults=' + adults +
+      '&passengers.children=' + kids +
+      '&flexDateDays=0' +
+      '&paymentMethodCode=-1' +
+      '&businessProfile=LASTMINUTEDE';
+    return base + params;
   }
 
-  return 'https://www.lastminute.de/fluege?' + params;
+  var params =
+    'itinerary.path%5B0%5D.departure=' + from +
+    '&itinerary.path%5B0%5D.arrival='  + to +
+    '&itinerary.path%5B0%5D.date='     + dep +
+    '&itinerary.type=ONE_WAY' +
+    '&passengers.adults=' + adults +
+    '&passengers.children=' + kids +
+    '&flexDateDays=0' +
+    '&paymentMethodCode=-1' +
+    '&businessProfile=LASTMINUTEDE';
+  return base + params;
 }
 
 // =============================================
