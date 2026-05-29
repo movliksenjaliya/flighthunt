@@ -1,164 +1,137 @@
 // =============================================
-// SERVICE WORKER — FlightHunt PWA
-// Offline support + cache management
+// SERVICE WORKER v5.0 — Auto cache clear
 // =============================================
 
 const CACHE_NAME = 'flighthunt-v5.0';
-const STATIC_ASSETS  = [
+const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/css/style.css',
-  '/js/app.js',
-  '/js/scrapers.js',
   '/js/utils.js',
+  '/js/scrapers.js',
+  '/js/app.js',
   '/manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
 ];
 
-// =============================================
-// INSTALL — cache static assets
-// =============================================
-
-self.addEventListener('install', (event) => {
-  console.log('[SW] Installing FlightHunt Service Worker...');
-
+// INSTALL — cache fresh assets
+self.addEventListener('install', function(event) {
+  console.log('[SW] Installing v5.0...');
+  // Skip waiting forces immediate activation
+  // This means new code runs straight away
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('[SW] Caching static assets');
-        // Cache each asset individually so one failure doesn't break all
-        return Promise.allSettled(
-          STATIC_ASSETS.map(url =>
-            cache.add(url).catch(err =>
-              console.warn(`[SW] Failed to cache: ${url}`, err)
-            )
-          )
-        );
-      })
-      .then(() => {
-        console.log('[SW] Install complete');
-        return self.skipWaiting();
-      })
-  );
-});
-
-// =============================================
-// ACTIVATE — clean old caches
-// =============================================
-
-self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating...');
-
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames
-          .filter(name => name !== CACHE_NAME)
-          .map(name => {
-            console.log(`[SW] Deleting old cache: ${name}`);
-            return caches.delete(name);
-          })
+    caches.open(CACHE_NAME).then(function(cache) {
+      return Promise.allSettled(
+        STATIC_ASSETS.map(function(url) {
+          return cache.add(url).catch(function(err) {
+            console.warn('[SW] Could not cache:', url, err);
+          });
+        })
       );
-    }).then(() => {
-      console.log('[SW] Activated, claiming clients');
-      return self.clients.claim();
     })
   );
 });
 
-// =============================================
-// FETCH — network-first for API, cache-first for assets
-// =============================================
+// ACTIVATE — delete ALL old caches immediately
+self.addEventListener('activate', function(event) {
+  console.log('[SW] Activating v5.0 — clearing old caches...');
+  event.waitUntil(
+    caches.keys().then(function(cacheNames) {
+      return Promise.all(
+        cacheNames.map(function(name) {
+          // Delete every cache that is not current version
+          if (name !== CACHE_NAME) {
+            console.log('[SW] Deleting old cache:', name);
+            return caches.delete(name);
+          }
+        })
+      );
+    }).then(function() {
+      console.log('[SW] Old caches cleared');
+      // Take control of all open tabs immediately
+      return self.clients.claim();
+    }).then(function() {
+      // Tell all open tabs to reload with new code
+      return self.clients.matchAll().then(function(clients) {
+        clients.forEach(function(client) {
+          client.postMessage({ type: 'SW_UPDATED', version: '5.0' });
+        });
+      });
+    })
+  );
+});
 
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
+// FETCH — network first, then cache
+// This ensures latest code always loads
+self.addEventListener('fetch', function(event) {
+  var request = event.request;
 
-  // Skip non-GET requests
+  // Skip non-GET
   if (request.method !== 'GET') return;
 
-  // Skip browser extension requests
-  if (url.protocol === 'chrome-extension:') return;
+  // Skip browser extensions
+  if (request.url.startsWith('chrome-extension://')) return;
+  if (request.url.startsWith('moz-extension://'))    return;
 
-  // Skip cross-origin requests (booking sites, APIs)
-  // These should ALWAYS go to network for fresh prices
-  const isCrossOrigin = url.origin !== self.location.origin;
-  if (isCrossOrigin) {
-    // Network only for external APIs — don't cache flight prices
+  // JS files — ALWAYS fetch fresh from network
+  // Never serve JS from cache (prevents stale code)
+  if (request.url.includes('/js/')) {
     event.respondWith(
-      fetch(request).catch(() => {
-        return new Response(
-          JSON.stringify({ error: 'Network unavailable' }),
-          { headers: { 'Content-Type': 'application/json' } }
-        );
+      fetch(request, { cache: 'no-store' })
+        .then(function(response) {
+          if (response && response.status === 200) {
+            var clone = response.clone();
+            caches.open(CACHE_NAME).then(function(cache) {
+              cache.put(request, clone);
+            });
+          }
+          return response;
+        })
+        .catch(function() {
+          // Offline fallback — serve from cache
+          return caches.match(request);
+        })
+    );
+    return;
+  }
+
+  // Cross-origin requests (CDN, APIs) — network only
+  if (!request.url.startsWith(self.location.origin)) {
+    event.respondWith(
+      fetch(request).catch(function() {
+        return caches.match(request);
       })
     );
     return;
   }
 
-  // ---- For our own assets: Cache-first, fallback to network ----
+  // Everything else — network first, cache fallback
   event.respondWith(
-    caches.match(request).then(cachedResponse => {
-      if (cachedResponse) {
-        // Serve from cache, update in background
-        const fetchPromise = fetch(request)
-          .then(networkResponse => {
-            if (networkResponse && networkResponse.status === 200) {
-              const responseClone = networkResponse.clone();
-              caches.open(CACHE_NAME).then(cache => {
-                cache.put(request, responseClone);
-              });
-            }
-            return networkResponse;
-          })
-          .catch(() => cachedResponse);
-
-        return cachedResponse;
-      }
-
-      // Not in cache — fetch from network
-      return fetch(request)
-        .then(networkResponse => {
-          if (!networkResponse || networkResponse.status !== 200) {
-            return networkResponse;
-          }
-          // Cache the new response
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(request, responseClone);
+    fetch(request, { cache: 'no-cache' })
+      .then(function(response) {
+        if (response && response.status === 200) {
+          var clone = response.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(request, clone);
           });
-          return networkResponse;
-        })
-        .catch(() => {
-          // Offline fallback — return cached index.html for navigation
+        }
+        return response;
+      })
+      .catch(function() {
+        return caches.match(request).then(function(cached) {
+          if (cached) return cached;
           if (request.mode === 'navigate') {
             return caches.match('/index.html');
           }
           return new Response('Offline', { status: 503 });
         });
-    })
+      })
   );
 });
 
-// =============================================
-// PUSH NOTIFICATIONS (Price Alerts)
-// =============================================
-
-self.addEventListener('push', (event) => {
-  if (!event.data) return;
-
-  let data;
-  try {
-    data = event.data.json();
-  } catch {
-    data = { title: 'FlightHunt Alert', body: event.data.text() };
+// MESSAGE — handle reload request from app
+self.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
   }
-
-  const options = {
-    body:    data.body || 'Flight price alert!',
-    icon:    '/icons/icon-192.png',
-    badge:   '/icons/icon-72.png',
-    vibrate: [200, 100, 200],
-    data:    { url: data.url || '/' },
-    actions: [
-      { action: 'view',   title: '
+});
