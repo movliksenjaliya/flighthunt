@@ -172,118 +172,122 @@ const SEARCH_SITES = [
 ];
 
 // =============================================
-// URL BUILDERS
-// =============================================
-
-function buildSkyscannerUrl(p) {
-  const dep    = (p.departDate || '').replace(/-/g, '');
-  const ret    = (p.returnDate || '').replace(/-/g, '');
-  const from   = (p.origin      || '').toLowerCase();
-  const to     = (p.destination || '').toLowerCase();
-  const adults = parseInt(p.adults)   || 1;
-  const kids   = parseInt(p.children) || 0;
-  const cabin  = { economy:'economy', premium_economy:'premiumeconomy', business:'business', first:'first' }[p.cabinClass] || 'economy';
-  const qs     = 'adults=' + adults + '&children=' + kids + '&adultsv2=' + adults + '&childrenv2=&infants=0&cabinclass=' + cabin + '&currency=EUR&locale=en-GB&market=UK';
   if (p.tripType === 'roundtrip' && ret) {
-    return 'https://www.skyscanner.net/transport/flights/' + from + '/' + to + '/' + dep + '/' + ret + '/?' + qs;
+    params += '&returnDate=' + ret;
   }
-  return 'https://www.skyscanner.net/transport/flights/' + from + '/' + to + '/' + dep + '/?' + qs;
+
+  return 'https://www.easyjet.com/en/cheap-flights-search?' + params;
 }
 
-function buildKayakUrl(p) {
-  const dep    = p.departDate || '';
-  const ret    = p.returnDate || '';
-  const from   = (p.origin      || '').toUpperCase();
-  const to     = (p.destination || '').toUpperCase();
-  const adults = parseInt(p.adults)   || 1;
-  const kids   = parseInt(p.children) || 0;
-  const cabin  = { economy:'e', premium_economy:'pe', business:'b', first:'f' }[p.cabinClass] || 'e';
-  var pax = adults + 'adults';
-  for (var i = 0; i < kids; i++) { pax += '-child10'; }
+// ---- LUFTHANSA ----
+function buildLufthansaUrl(p) {
+  var from   = (p.origin      || '').toUpperCase();
+  var to     = (p.destination || '').toUpperCase();
+  var dep    = p.departDate || '';
+  var ret    = p.returnDate || '';
+  var adults = parseInt(p.adults)   || 1;
+  var kids   = parseInt(p.children) || 0;
+  var cabin  = {
+    economy:'Y', premium_economy:'M',
+    business:'C', first:'F'
+  }[p.cabinClass] || 'Y';
+  var type   = p.tripType === 'roundtrip' ? 'ROUND_TRIP' : 'ONE_WAY';
+
+  var params = 'origin='      + from +
+               '&destination='+ to +
+               '&outwardDate='+ dep +
+               '&adults='     + adults +
+               '&children='   + kids +
+               '&infants=0' +
+               '&cabinClass=' + cabin +
+               '&tripType='   + type +
+               '&currency=EUR';
+
   if (p.tripType === 'roundtrip' && ret) {
-    return 'https://www.kayak.com/flights/' + from + '-' + to + '/' + dep + '/' + ret + '/' + pax + '/' + cabin + '?currency=EUR&sort=price_a';
+    params += '&returnDate=' + ret;
   }
-  return 'https://www.kayak.com/flights/' + from + '-' + to + '/' + dep + '/' + pax + '/' + cabin + '?currency=EUR&sort=price_a';
+
+  return 'https://www.lufthansa.com/de/en/flight-search?' + params;
 }
 
-function buildKiwiUrl(p) {
-  const dep    = p.departDate || '';
-  const ret    = p.returnDate || '';
-  const from   = (p.origin      || '').toUpperCase();
-  const to     = (p.destination || '').toUpperCase();
-  const adults = parseInt(p.adults)   || 1;
-  const kids   = parseInt(p.children) || 0;
-  const type   = (p.tripType === 'roundtrip') ? 'return' : 'oneway';
+// ---- EMIRATES ----
+function buildEmiratesUrl(p) {
+  var from   = (p.origin      || '').toUpperCase();
+  var to     = (p.destination || '').toUpperCase();
+  var dep    = p.departDate || '';
+  var ret    = p.returnDate || '';
+  var adults = parseInt(p.adults)   || 1;
+  var kids   = parseInt(p.children) || 0;
+  var cabin  = {
+    economy:'Y', premium_economy:'W',
+    business:'J', first:'F'
+  }[p.cabinClass] || 'Y';
+
+  var params = 'type='   + (p.tripType === 'roundtrip' ? 'ROUND_TRIP' : 'ONE_WAY') +
+               '&from='  + from +
+               '&to='    + to +
+               '&depart='+ dep +
+               '&adult=' + adults +
+               '&child=' + kids +
+               '&infant=0' +
+               '&cabin=' + cabin +
+               '&currency=EUR';
+
   if (p.tripType === 'roundtrip' && ret) {
-    return 'https://www.kiwi.com/en/search/results/' + from + '/' + to + '/' + dep + '/' + ret + '?adults=' + adults + '&children=' + kids + '&infants=0&currency=EUR&flightsType=' + type;
+    params += '&return=' + ret;
   }
-  return 'https://www.kiwi.com/en/search/results/' + from + '/' + to + '/' + dep + '/no-return?adults=' + adults + '&children=' + kids + '&infants=0&currency=EUR&flightsType=' + type;
+
+  return 'https://www.emirates.com/english/book-and-manage/book-flights/?' + params;
 }
 
-function buildExpediaUrl(p) {
-  const dep    = p.departDate || '';
-  const ret    = p.returnDate || '';
-  const from   = (p.origin      || '').toUpperCase();
-  const to     = (p.destination || '').toUpperCase();
-  const adults = parseInt(p.adults)   || 1;
-  const kids   = parseInt(p.children) || 0;
-  if (p.tripType === 'roundtrip' && ret) {
-    return 'https://www.expedia.com/Flights-Search?trip=roundtrip&leg1=from:' + from + ',to:' + to + ',departure:' + dep + 'TANYT&leg2=from:' + to + ',to:' + from + ',departure:' + ret + 'TANYT&passengers=adults:' + adults + ',children:' + kids + ',seniors:0,infantinlap:0&options=cabinclass:economy&mode=search&currency=EUR';
-  }
-  return 'https://www.expedia.com/Flights-Search?trip=oneway&leg1=from:' + from + ',to:' + to + ',departure:' + dep + 'TANYT&passengers=adults:' + adults + ',children:' + kids + ',seniors:0,infantinlap:0&options=cabinclass:economy&mode=search&currency=EUR';
-}
-
-function buildMomondoUrl(p) {
-  const dep    = p.departDate || '';
-  const ret    = p.returnDate || '';
-  const from   = (p.origin      || '').toUpperCase();
-  const to     = (p.destination || '').toUpperCase();
-  const adults = parseInt(p.adults)   || 1;
-  const kids   = parseInt(p.children) || 0;
-  const cabin  = { economy:'e', premium_economy:'pe', business:'b', first:'f' }[p.cabinClass] || 'e';
-  if (p.tripType === 'roundtrip' && ret) {
-    return 'https://www.momondo.com/flight-search/' + from + '-' + to + '/' + dep + '/' + ret + '/' + adults + 'adults?currency=EUR&cabin=' + cabin + '&children=' + kids;
-  }
-  return 'https://www.momondo.com/flight-search/' + from + '-' + to + '/' + dep + '/oneway/' + adults + 'adults?currency=EUR&cabin=' + cabin + '&children=' + kids;
-}
-
+// ---- GOOGLE FLIGHTS ----
+// Note: Google intentionally blocks most URL params
+// Airports ARE pre-filled, dates use hash format
+// Passengers cannot be pre-filled via URL (Google blocks this)
 function buildGoogleFlightsUrl(p) {
-  const from   = (p.origin      || '').toUpperCase();
-  const to     = (p.destination || '').toUpperCase();
-  const dep    = p.departDate || '';
-  const ret    = p.returnDate || '';
-  const adults = parseInt(p.adults)   || 1;
-  const kids   = parseInt(p.children) || 0;
-  const isRT   = p.tripType === 'roundtrip' && ret;
+  var from   = (p.origin      || '').toUpperCase();
+  var to     = (p.destination || '').toUpperCase();
+  var dep    = p.departDate || '';
+  var ret    = p.returnDate || '';
 
-  // Google Flights works with this format:
-  // /travel/flights/search?tfs=...
-  // The tfs param is base64 encoded protobuf
-  // BUT Google also accepts this simpler format
-  // that actually passes dates:
-
-  // Format dates as YYYY-MM-DD
-  const depDate = dep; // already YYYY-MM-DD
-  const retDate = ret; // already YYYY-MM-DD
-
-  // Build passenger string
-  // Google uses: num_adults=2&num_children=1
-  let url = `https://www.google.com/travel/flights`;
-  url += `?hl=en&curr=EUR`;
-  url += `&q=flights+from+${from}+to+${to}`;
-
-  // Try Google's newer format with f= parameter
-  // This is the format Google itself uses for sharing
-  if (isRT) {
-    url = `https://www.google.com/travel/flights/search`;
-    url += `?tfs=CBwQAhoeEgoyMDI1LTAxLTAxagcIARIDTVVDcgcIARIDQk9NGgASBAAQAQ..`;
-    url += `&hl=en&curr=EUR`;
-    url += `&q=flights+from+${from}+to+${to}`;
+  // Hash format is best attempt for dates
+  if (p.tripType === 'roundtrip' && ret) {
+    return 'https://www.google.com/travel/flights?hl=en&curr=EUR' +
+           '#flt=' + from + '.' + to + '.' + dep +
+           '*' + to + '.' + from + '.' + ret +
+           ';c:EUR;e:1;sd:1;t:f';
   }
-
-  return url;
+  return 'https://www.google.com/travel/flights?hl=en&curr=EUR' +
+         '#flt=' + from + '.' + to + '.' + dep +
+         ';c:EUR;e:1;sd:1;t:f';
 }
 
+// ---- TRIP.COM ----
+function buildTripUrl(p) {
+  var from   = (p.origin      || '').toUpperCase();
+  var to     = (p.destination || '').toUpperCase();
+  var dep    = p.departDate || '';
+  var ret    = p.returnDate || '';
+  var adults = parseInt(p.adults)   || 1;
+  var kids   = parseInt(p.children) || 0;
+  var type   = p.tripType === 'roundtrip' ? 'RT' : 'OW';
+
+  var params = 'dcity='    + from +
+               '&acity='   + to +
+               '&ddate='   + dep +
+               '&adult='   + adults +
+               '&child='   + kids +
+               '&infant=0' +
+               '&cabin=Y' +
+               '&curr=EUR' +
+               '&triptype='+ type;
+
+  if (p.tripType === 'roundtrip' && ret) {
+    params += '&rdate=' + ret;
+  }
+
+  return 'https://uk.trip.com/flights/onlineflight?' + params;
+}
 // =============================================
 // DATE HELPERS
 // =============================================
