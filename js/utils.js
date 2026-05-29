@@ -1,6 +1,5 @@
 // =============================================
-// UTILS.JS — FINAL DEFINITIVE VERSION
-// Only sites that actually work properly
+// UTILS.JS - Final Clean Version
 // =============================================
 
 const AIRPORTS = [
@@ -76,7 +75,6 @@ const AIRPORTS = [
   { iata:'AYT', name:'Antalya Airport',              city:'Antalya',       country:'Turkey'      },
   { iata:'ESB', name:'Ankara Esenboga',              city:'Ankara',        country:'Turkey'      },
   { iata:'ADB', name:'Izmir Adnan Menderes',         city:'Izmir',         country:'Turkey'      },
-  // INDIA
   { iata:'DEL', name:'Indira Gandhi Intl',           city:'New Delhi',     country:'India'       },
   { iata:'BOM', name:'Chhatrapati Shivaji Intl',     city:'Mumbai',        country:'India'       },
   { iata:'BLR', name:'Kempegowda Intl',              city:'Bangalore',     country:'India'       },
@@ -103,7 +101,6 @@ const AIRPORTS = [
   { iata:'BHO', name:'Raja Bhoj Airport',            city:'Bhopal',        country:'India'       },
   { iata:'IXR', name:'Birsa Munda Airport',          city:'Ranchi',        country:'India'       },
   { iata:'VTZ', name:'Vishakhapatnam Airport',       city:'Vizag',         country:'India'       },
-  // HUBS
   { iata:'DXB', name:'Dubai Intl',                   city:'Dubai',         country:'UAE'         },
   { iata:'AUH', name:'Abu Dhabi Intl',               city:'Abu Dhabi',     country:'UAE'         },
   { iata:'DOH', name:'Hamad Intl',                   city:'Doha',          country:'Qatar'       },
@@ -142,7 +139,6 @@ const POPULAR_ROUTES = [
 
 // =============================================
 // SEARCH SITES
-// Only sites CONFIRMED working from testing
 // =============================================
 const SEARCH_SITES = [
   {
@@ -151,7 +147,7 @@ const SEARCH_SITES = [
     icon:  '🌐',
     color: '#0770e3',
     note:  '✅ Route + Dates + Passengers + EUR',
-    desc:  'Best overall aggregator. Fully pre-filled from your search.',
+    desc:  'Best overall aggregator. Fully pre-filled.',
     buildUrl: buildSkyscannerUrl,
   },
   {
@@ -178,7 +174,7 @@ const SEARCH_SITES = [
     icon:  '🌸',
     color: '#6b0fa8',
     note:  '✅ Route + Dates + Passengers + EUR',
-    desc:  'Finds hidden deals. Use Baggage filter after page loads.',
+    desc:  'Finds hidden deals from smaller booking sites.',
     buildUrl: buildMomondoUrl,
   },
   {
@@ -187,7 +183,7 @@ const SEARCH_SITES = [
     icon:  '🔍',
     color: '#4285f4',
     note:  '✅ Route + EUR  ⚠️ Set dates manually',
-    desc:  'Best price calendar. Origin pre-filled. Set destination and dates manually.',
+    desc:  'Best price calendar. Origin pre-filled. Set dates manually.',
     buildUrl: buildGoogleFlightsUrl,
   },
   {
@@ -196,7 +192,7 @@ const SEARCH_SITES = [
     icon:  '🏨',
     color: '#003580',
     note:  '✅ Route + Dates + Passengers + EUR',
-    desc:  'Flights from Booking.com. Trusted and widely used.',
+    desc:  'Trusted worldwide booking site.',
     buildUrl: buildBookingUrl,
   },
   {
@@ -205,7 +201,7 @@ const SEARCH_SITES = [
     icon:  '🟣',
     color: '#7b2d8b',
     note:  '✅ Route + Dates + Passengers + EUR',
-    desc:  'European travel agency. Great for Europe and India routes.',
+    desc:  'Large European travel agency.',
     buildUrl: buildOpodoUrl,
   },
   {
@@ -214,7 +210,7 @@ const SEARCH_SITES = [
     icon:  '⏰',
     color: '#e5002b',
     note:  '✅ Route + Dates + Passengers + EUR',
-    desc:  'Great for last minute deals and package discounts.',
+    desc:  'Great for last minute deals.',
     buildUrl: buildLastminuteUrl,
   },
   {
@@ -223,7 +219,7 @@ const SEARCH_SITES = [
     icon:  '💙',
     color: '#0066cc',
     note:  '✅ Route + Dates + Passengers + EUR',
-    desc:  'Large European OTA. Often has exclusive deals.',
+    desc:  'Large European OTA with exclusive deals.',
     buildUrl: buildEdreamsUrl,
   },
   {
@@ -232,16 +228,15 @@ const SEARCH_SITES = [
     icon:  '🛫',
     color: '#ff6600',
     note:  '✅ Route + Dates + Passengers + EUR',
-    desc:  'Searches multiple airlines. Good for India routes.',
+    desc:  'Searches multiple airlines including India routes.',
     buildUrl: buildBravoflyUrl,
   },
 ];
 
 // =============================================
-// URL BUILDERS — All verified working
+// URL BUILDERS — English + EUR
 // =============================================
 
-// SKYSCANNER — .de = EUR guaranteed ✅
 function buildSkyscannerUrl(p) {
   var dep    = (p.departDate || '').replace(/-/g, '');
   var ret    = (p.returnDate || '').replace(/-/g, '');
@@ -250,22 +245,15 @@ function buildSkyscannerUrl(p) {
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
   var cabin  = { economy:'economy', premium_economy:'premiumeconomy', business:'business', first:'first' }[p.cabinClass] || 'economy';
-
-  var qs = 'adults='     + adults +
-           '&children='  + kids +
-           '&adultsv2='  + adults +
-           '&childrenv2=&infants=0' +
-           '&cabinclass='+ cabin +
-           '&currency=EUR&locale=de-DE&market=DE';
-
+  var qs = 'adults=' + adults + '&children=' + kids + '&adultsv2=' + adults +
+           '&childrenv2=&infants=0&cabinclass=' + cabin +
+           '&currency=EUR&locale=en-GB&market=DE';
   if (p.directOnly) { qs += '&stops=!2,!1'; }
-
-  var base = 'https://www.skyscanner.de/transport/flights/' + from + '/' + to + '/';
+  var base = 'https://www.skyscanner.net/transport/flights/' + from + '/' + to + '/';
   if (p.tripType === 'roundtrip' && ret) return base + dep + '/' + ret + '/?' + qs;
   return base + dep + '/?' + qs;
 }
 
-// KAYAK — .de = EUR guaranteed ✅
 function buildKayakUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -279,12 +267,11 @@ function buildKayakUrl(p) {
   var qs = '?currency=EUR&sort=price_a';
   if (p.directOnly) { qs += '&fs=stops=0'; }
   if (p.tripType === 'roundtrip' && ret) {
-    return 'https://www.kayak.de/flights/' + from + '-' + to + '/' + dep + '/' + ret + '/' + pax + '/' + cabin + qs;
+    return 'https://www.kayak.com/flights/' + from + '-' + to + '/' + dep + '/' + ret + '/' + pax + '/' + cabin + qs;
   }
-  return 'https://www.kayak.de/flights/' + from + '-' + to + '/' + dep + '/' + pax + '/' + cabin + qs;
+  return 'https://www.kayak.com/flights/' + from + '-' + to + '/' + dep + '/' + pax + '/' + cabin + qs;
 }
 
-// EXPEDIA — .de = EUR confirmed working ✅
 function buildExpediaUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -300,10 +287,9 @@ function buildExpediaUrl(p) {
   if (p.tripType === 'roundtrip' && ret) {
     params += '&leg2=from:' + to + ',to:' + from + ',departure:' + ret + 'TANYT';
   }
-  return 'https://www.expedia.de/Flights-Search?' + params;
+  return 'https://www.expedia.com/Flights-Search?' + params;
 }
 
-// MOMONDO — .de = EUR confirmed working ✅
 function buildMomondoUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -312,24 +298,21 @@ function buildMomondoUrl(p) {
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
   var cabin  = { economy:'e', premium_economy:'pe', business:'b', first:'f' }[p.cabinClass] || 'e';
-  var qs     = '?currency=EUR&cabin=' + cabin + '&children=' + kids + '&lang=de&sort=bestflight_a';
+  var qs = '?currency=EUR&cabin=' + cabin + '&children=' + kids + '&locale=en-US&sort=bestflight_a';
   if (p.directOnly) { qs += '&fs=stops=0'; }
   if (p.tripType === 'roundtrip' && ret) {
-    return 'https://www.momondo.de/flight-search/' + from + '-' + to + '/' + dep + '/' + ret + '/' + adults + 'adults' + qs;
+    return 'https://www.momondo.com/flight-search/' + from + '-' + to + '/' + dep + '/' + ret + '/' + adults + 'adults' + qs;
   }
-  return 'https://www.momondo.de/flight-search/' + from + '-' + to + '/' + dep + '/oneway/' + adults + 'adults' + qs;
+  return 'https://www.momondo.com/flight-search/' + from + '-' + to + '/' + dep + '/oneway/' + adults + 'adults' + qs;
 }
 
-// GOOGLE FLIGHTS — origin pre-fills ✅
 function buildGoogleFlightsUrl(p) {
   var from = (p.origin      || '').toUpperCase();
   var to   = (p.destination || '').toUpperCase();
   var dep  = p.departDate   || '';
-  return 'https://www.google.com/travel/flights?q=flights+from+' +
-         from + '+to+' + to + '+on+' + dep + '&hl=en&curr=EUR';
+  return 'https://www.google.com/travel/flights?q=flights+from+' + from + '+to+' + to + '+on+' + dep + '&hl=en&curr=EUR';
 }
 
-// BOOKING.COM FLIGHTS ✅
 function buildBookingUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -339,23 +322,14 @@ function buildBookingUrl(p) {
   var kids   = parseInt(p.children) || 0;
   var cabin  = { economy:'ECONOMY', premium_economy:'PREMIUM_ECONOMY', business:'BUSINESS', first:'FIRST' }[p.cabinClass] || 'ECONOMY';
   var type   = p.tripType === 'roundtrip' ? 'ROUNDTRIP' : 'ONEWAY';
-
-  var params = 'type='        + type +
-               '&from='       + from +
-               '&to='         + to +
-               '&fromDate='   + dep +
-               '&adults='     + adults +
-               '&children='   + kids +
-               '&cabinClass=' + cabin +
-               '&currency=EUR&lang=en-gb';
-
+  var params = 'type=' + type + '&from=' + from + '&to=' + to + '&fromDate=' + dep +
+               '&adults=' + adults + '&children=' + kids +
+               '&cabinClass=' + cabin + '&currency=EUR&lang=en-gb';
   if (p.tripType === 'roundtrip' && ret) { params += '&toDate=' + ret; }
   if (p.directOnly) { params += '&stops=NONSTOP'; }
-
   return 'https://flights.booking.com/flights/' + from + '-' + to + '/?' + params;
 }
 
-// OPODO — European OTA ✅
 function buildOpodoUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -364,24 +338,14 @@ function buildOpodoUrl(p) {
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
   var cabin  = { economy:'Y', premium_economy:'W', business:'C', first:'F' }[p.cabinClass] || 'Y';
-  var type   = p.tripType === 'roundtrip' ? 'R' : 'OW';
-
-  var params = 'adults='      + adults +
-               '&children='   + kids +
-               '&infants=0' +
-               '&from='       + from +
-               '&to='         + to +
-               '&cabin='      + cabin +
-               '&type='       + type +
-               '&outbound='   + dep +
-               '&currency=EUR';
-
+  var params = 'adults=' + adults + '&children=' + kids + '&infants=0' +
+               '&from=' + from + '&to=' + to + '&cabin=' + cabin +
+               '&type=' + (p.tripType === 'roundtrip' ? 'R' : 'OW') +
+               '&outbound=' + dep + '&currency=EUR&lang=en';
   if (p.tripType === 'roundtrip' && ret) { params += '&inbound=' + ret; }
-
-  return 'https://www.opodo.de/flights/?' + params;
+  return 'https://www.opodo.com/flights/?' + params;
 }
 
-// LASTMINUTE.COM ✅
 function buildLastminuteUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -390,24 +354,14 @@ function buildLastminuteUrl(p) {
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
   var cabin  = { economy:'eco', premium_economy:'pre', business:'bus', first:'fir' }[p.cabinClass] || 'eco';
-  var type   = p.tripType === 'roundtrip' ? 'rt' : 'ow';
-
-  var params = 'adults='    + adults +
-               '&children=' + kids +
-               '&infants=0' +
-               '&from='     + from +
-               '&to='       + to +
-               '&class='    + cabin +
-               '&type='     + type +
-               '&departure='+ dep +
-               '&currency=EUR';
-
+  var params = 'adults=' + adults + '&children=' + kids + '&infants=0' +
+               '&from=' + from + '&to=' + to + '&class=' + cabin +
+               '&type=' + (p.tripType === 'roundtrip' ? 'rt' : 'ow') +
+               '&departure=' + dep + '&currency=EUR&lang=en';
   if (p.tripType === 'roundtrip' && ret) { params += '&return=' + ret; }
-
   return 'https://www.lastminute.com/flights/?' + params;
 }
 
-// EDREAMS ✅
 function buildEdreamsUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -416,33 +370,23 @@ function buildEdreamsUrl(p) {
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
   var cabin  = { economy:'Y', premium_economy:'W', business:'C', first:'F' }[p.cabinClass] || 'Y';
-
-  // eDreams date format: DD-MM-YYYY
   function toED(d) {
     if (!d) return '';
     var pts = d.split('-');
     return pts[2] + '-' + pts[1] + '-' + pts[0];
   }
-
-  var params = 'adults='     + adults +
-               '&children='  + kids +
-               '&infants=0' +
-               '&from='      + from +
-               '&to='        + to +
-               '&departure=' + toED(dep) +
-               '&cabin='     + cabin +
-               '&currency=EUR';
-
+  var params = 'adults=' + adults + '&children=' + kids + '&infants=0' +
+               '&from=' + from + '&to=' + to +
+               '&departure=' + toED(dep) + '&cabin=' + cabin +
+               '&currency=EUR&lang=en';
   if (p.tripType === 'roundtrip' && ret) {
     params += '&return=' + toED(ret) + '&type=RT';
   } else {
     params += '&type=OW';
   }
-
-  return 'https://www.edreams.de/flights/?' + params;
+  return 'https://www.edreams.com/flights/?' + params;
 }
 
-// BRAVOFLY ✅
 function buildBravoflyUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -450,29 +394,20 @@ function buildBravoflyUrl(p) {
   var to     = (p.destination || '').toUpperCase();
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
-
-  // Bravofly date format: DD/MM/YYYY
   function toBF(d) {
     if (!d) return '';
     var pts = d.split('-');
     return pts[2] + '/' + pts[1] + '/' + pts[0];
   }
-
-  var params = 'adults='     + adults +
-               '&children='  + kids +
-               '&infants=0' +
-               '&from='      + from +
-               '&to='        + to +
-               '&departure=' + toBF(dep) +
-               '&currency=EUR';
-
+  var params = 'adults=' + adults + '&children=' + kids + '&infants=0' +
+               '&from=' + from + '&to=' + to +
+               '&departure=' + toBF(dep) + '&currency=EUR&lang=en';
   if (p.tripType === 'roundtrip' && ret) {
     params += '&return=' + toBF(ret) + '&type=RT';
   } else {
     params += '&type=OW';
   }
-
-  return 'https://www.bravofly.de/flights/?' + params;
+  return 'https://www.bravofly.com/flights/?' + params;
 }
 
 // =============================================
