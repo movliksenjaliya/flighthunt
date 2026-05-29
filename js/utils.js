@@ -327,24 +327,22 @@ function buildLastminuteUrl(p) {
   var kids   = parseInt(p.children) || 0;
   var isRT   = p.tripType === 'roundtrip' && ret;
 
-  // lastminute.de correct working URL format
-  // Uses search path with query params
-  var params = 'o1='         + from +
-               '&d1='        + to +
-               '&dd1='       + dep +
-               '&ADT='       + adults +
-               '&CHD='       + kids +
-               '&INF=0' +
-               '&SC=YY' +
+  // lastminute.de correct working URL
+  var params = 'departing='  + from +
+               '&arriving='  + to +
+               '&departdate='+ dep +
+               '&adults='    + adults +
+               '&children='  + kids +
+               '&infants=0' +
                '&currency=EUR';
 
   if (isRT) {
-    params += '&dd2=' + ret + '&TT=RT';
+    params += '&returndate=' + ret + '&triptype=return';
   } else {
-    params += '&TT=OW';
+    params += '&triptype=oneway';
   }
 
-  return 'https://www.lastminute.de/fluege/ergebnisse?' + params;
+  return 'https://www.lastminute.de/fluege?' + params;
 }
 
 // =============================================
