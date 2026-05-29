@@ -239,7 +239,32 @@ body {
 ::-webkit-scrollbar-track { background: var(--bg-primary); }
 ::-webkit-scrollbar-thumb { background: var(--accent-2); border-radius: 3px; }
 .hidden { display: none !important; }
+  
+/* ---- DATE INPUT CALENDAR ICON — white ---- */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.7;
+  cursor: pointer;
+}
 
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Firefox */
+input[type="date"] {
+  color-scheme: dark;
+}
+
+/* Light mode — keep icon visible */
+[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.3);
+  opacity: 0.6;
+}
+
+[data-theme="light"] input[type="date"] {
+  color-scheme: light;
+}
 /* ---------- HEADER ---------- */
 .header {
   background: var(--bg-secondary);
