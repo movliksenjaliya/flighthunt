@@ -147,85 +147,71 @@ const SEARCH_SITES = [
     id: 'skyscanner', name: 'Skyscanner', icon: '🌐',
     color: '#0770e3',
     note: 'Best overall comparison',
-    desc: 'Compares 100s of airlines. Dates, passengers and baggage pre-filled.',
+    desc: 'Largest flight comparison. Dates, passengers pre-filled. EUR currency.',
     buildUrl: buildSkyscannerUrl,
   },
   {
     id: 'kayak', name: 'Kayak', icon: '🛶',
     color: '#ff690f',
     note: 'Price forecasting included',
-    desc: 'Shows if prices will rise or drop. Route and dates pre-filled.',
+    desc: 'Shows if prices will rise or drop. All details pre-filled.',
     buildUrl: buildKayakUrl,
   },
   {
     id: 'kiwi', name: 'Kiwi.com', icon: '🥝',
     color: '#00b2a1',
     note: 'Cheapest combinations finder',
-    desc: 'Finds cheapest route combinations. Dates and passengers pre-filled.',
+    desc: 'Finds cheapest route combinations including unusual connections.',
     buildUrl: buildKiwiUrl,
   },
   {
     id: 'expedia', name: 'Expedia', icon: '✈️',
     color: '#00355f',
     note: 'Flights + hotel bundles',
-    desc: 'Book flight and hotel together. Route and dates pre-filled.',
+    desc: 'Book flight and hotel together for better deals. EUR confirmed.',
     buildUrl: buildExpediaUrl,
   },
   {
     id: 'momondo', name: 'Momondo', icon: '🌸',
     color: '#6b0fa8',
     note: 'Hidden deal finder',
-    desc: 'Searches smaller booking sites. Route and dates pre-filled.',
+    desc: 'Searches smaller booking sites that others miss. EUR currency.',
     buildUrl: buildMomondoUrl,
-  },
-  {
-    id: 'wizzair', name: 'Wizz Air', icon: '💜',
-    color: '#c6007e',
-    note: 'Cheapest Europe budget airline',
-    desc: 'Best for budget flights within Europe. Direct booking.',
-    buildUrl: buildWizzairUrl,
-  },
-  {
-    id: 'ryanair', name: 'Ryanair', icon: '🟡',
-    color: '#073590',
-    note: 'Largest European low-cost airline',
-    desc: 'Widest European route network. Often the cheapest.',
-    buildUrl: buildRyanairUrl,
-  },
-  {
-    id: 'easyjet', name: 'easyJet', icon: '🟠',
-    color: '#ff6600',
-    note: 'UK and Europe budget flights',
-    desc: 'Strong network across UK and Western Europe.',
-    buildUrl: buildEasyjetUrl,
-  },
-  {
-    id: 'lufthansa', name: 'Lufthansa', icon: '✈',
-    color: '#05164d',
-    note: 'Premium full-service airline',
-    desc: 'Top-rated European carrier. Best for business class.',
-    buildUrl: buildLufthansaUrl,
-  },
-  {
-    id: 'emirates', name: 'Emirates', icon: '🇦🇪',
-    color: '#b8170d',
-    note: 'Best Europe ↔ India via Dubai',
-    desc: 'Award-winning airline. Great for Europe to India routes.',
-    buildUrl: buildEmiratesUrl,
-  },
-  {
-    id: 'trip', name: 'Trip.com', icon: '🌏',
-    color: '#1890ff',
-    note: 'Great Asia and India deals',
-    desc: 'Strong coverage for India routes. Often has exclusive deals.',
-    buildUrl: buildTripUrl,
   },
   {
     id: 'google_flights', name: 'Google Flights', icon: '🔍',
     color: '#4285f4',
-    note: 'Price calendar and alerts',
-    desc: '⚠️ Google blocks date/passenger pre-filling. Set manually after opening.',
+    note: 'Price calendar and graph',
+    desc: '⚠️ Set destination and dates manually after opening. Best price calendar.',
     buildUrl: buildGoogleFlightsUrl,
+  },
+  {
+    id: 'cleartrip', name: 'Cleartrip', icon: '🌀',
+    color: '#e84c22',
+    note: 'India routes specialist',
+    desc: 'Best for India routes. Dates and passengers pre-filled.',
+    buildUrl: buildCleartripUrl,
+  },
+  {
+    id: 'makemytrip', name: 'MakeMyTrip', icon: '🇮🇳',
+    color: '#da0000',
+    note: 'India No.1 booking site',
+    desc: 'India largest travel site. Best deals for India routes.',
+    buildUrl: buildMakeMyTripUrl,
+  },
+  {
+    id: 'jetradar', name: 'Jetradar', icon: '🛩️',
+    color: '#ff6d00',
+    note: 'Compares 726 airlines',
+    desc: 'Searches 726 airlines and 200 booking sites at once.',
+    buildUrl: buildJetradarUrl,
+  },
+  {
+    id: 'wego', name: 'Wego', icon: '🌍',
+    color: '#00a651',
+    note: 'Asia and Middle East deals',
+    desc: 'Great for India and Middle East connecting flights.',
+    buildUrl: buildWegoUrl,
   },
 ];
 
@@ -233,12 +219,11 @@ const SEARCH_SITES = [
 // URL BUILDERS — All verified with correct
 // currency, locale and baggage parameters
 // =============================================
+// =============================================
+// URL BUILDERS — Aggregators only, no airlines
+// =============================================
 
-// --------------------------------------------------
-// SKYSCANNER
-// Fixed: market=DE (Germany), currency=EUR
-// Baggage: &includeCheckedBaggage=true
-// --------------------------------------------------
+// SKYSCANNER — .de domain = EUR guaranteed
 function buildSkyscannerUrl(p) {
   var dep    = (p.departDate || '').replace(/-/g, '');
   var ret    = (p.returnDate || '').replace(/-/g, '');
@@ -247,28 +232,23 @@ function buildSkyscannerUrl(p) {
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
   var cabin  = {
-    economy:         'economy',
-    premium_economy: 'premiumeconomy',
-    business:        'business',
-    first:           'first'
+    economy:'economy', premium_economy:'premiumeconomy',
+    business:'business', first:'first'
   }[p.cabinClass] || 'economy';
 
-  // market=DE forces EUR, locale=de-DE
-  var qs = 'adults='    + adults +
-           '&children=' + kids +
-           '&adultsv2=' + adults +
+  var qs = 'adults='     + adults +
+           '&children='  + kids +
+           '&adultsv2='  + adults +
            '&childrenv2=&infants=0' +
-           '&cabinclass=' + cabin +
+           '&cabinclass='+ cabin +
            '&currency=EUR' +
            '&locale=de-DE' +
            '&market=DE';
 
-  // Add checked baggage filter if selected
-  if (p.checkedBaggage) {
-    qs += '&includeCheckedBaggage=true';
-  }
+  if (p.checkedBaggage) { qs += '&baggage=1'; }
+  if (p.directOnly)     { qs += '&stops=!2,!1'; }
 
-  var base = 'https://www.skyscanner.net/transport/flights/' +
+  var base = 'https://www.skyscanner.de/transport/flights/' +
              from + '/' + to + '/';
 
   if (p.tripType === 'roundtrip' && ret) {
@@ -277,10 +257,7 @@ function buildSkyscannerUrl(p) {
   return base + dep + '/?' + qs;
 }
 
-// --------------------------------------------------
-// KAYAK
-// Fixed: locale/de-DE forces EUR display
-// --------------------------------------------------
+// KAYAK — .de domain = EUR guaranteed
 function buildKayakUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -288,32 +265,29 @@ function buildKayakUrl(p) {
   var to     = (p.destination || '').toUpperCase();
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
-  var cabin  = {economy:'e', premium_economy:'pe', business:'b', first:'f'}[p.cabinClass] || 'e';
+  var cabin  = {
+    economy:'e', premium_economy:'pe',
+    business:'b', first:'f'
+  }[p.cabinClass] || 'e';
 
   var pax = adults + 'adults';
   for (var i = 0; i < kids; i++) { pax += '-child10'; }
 
-  // Use kayak.de (German site) to force EUR
-  var base = 'https://www.kayak.de/flights/';
-
-  var qs = '?currency=EUR&sort=price_a&lang=de';
-
-  // Add baggage filter
-  if (p.checkedBaggage) {
-    qs += '&fs=cfc=1';
-  }
+  var qs = '?currency=EUR&sort=price_a';
+  if (p.directOnly) { qs += '&fs=stops=0'; }
 
   if (p.tripType === 'roundtrip' && ret) {
-    return base + from + '-' + to + '/' + dep + '/' + ret + '/' + pax + '/' + cabin + qs;
+    return 'https://www.kayak.de/flights/' +
+           from + '-' + to + '/' +
+           dep + '/' + ret + '/' +
+           pax + '/' + cabin + qs;
   }
-  return base + from + '-' + to + '/' + dep + '/' + pax + '/' + cabin + qs;
+  return 'https://www.kayak.de/flights/' +
+         from + '-' + to + '/' +
+         dep + '/' + pax + '/' + cabin + qs;
 }
 
-// --------------------------------------------------
-// KIWI.COM
-// Fixed: Use correct URL format that fills locations
-// Kiwi needs src_iata and dst_iata params
-// --------------------------------------------------
+// KIWI — dates fill correctly, airports fill via path
 function buildKiwiUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -323,43 +297,26 @@ function buildKiwiUrl(p) {
   var kids   = parseInt(p.children) || 0;
   var type   = (p.tripType === 'roundtrip') ? 'return' : 'oneway';
 
-  // Kiwi NEW correct format — uses src/dst query params
-  // This is the format that actually pre-fills the airports
-  var params = 'src_iata=' + from +
-               '&dst_iata=' + to +
-               '&departure_token=' + dep.replace(/-/g, '') +
-               '&depart_date=' + dep +
-               '&adults=' + adults +
-               '&children=' + kids +
-               '&infants=0' +
-               '&currency=EUR' +
-               '&flightsType=' + type +
-               '&sortBy=price&asc=1';
+  var qs = 'adults='    + adults +
+           '&children=' + kids +
+           '&infants=0' +
+           '&currency=EUR' +
+           '&flightsType=' + type +
+           '&sortBy=price&asc=1';
 
-  if (p.tripType === 'roundtrip' && ret) {
-    params += '&return_date=' + ret;
-  }
+  if (p.checkedBaggage) { qs += '&bags=1'; }
+  if (p.directOnly)     { qs += '&stopNumber=0'; }
 
-  if (p.checkedBaggage) {
-    params += '&bags=1';
-  }
-
-  // Use the search results URL with IATA in path AND as params
   if (p.tripType === 'roundtrip' && ret) {
     return 'https://www.kiwi.com/en/search/results/' +
            from + '/' + to + '/' + dep + '/' + ret +
-           '?' + params;
+           '?' + qs;
   }
-
   return 'https://www.kiwi.com/en/search/results/' +
-         from + '/' + to + '/' + dep + '/no-return' +
-         '?' + params;
+         from + '/' + to + '/' + dep + '/no-return?' + qs;
 }
 
-// --------------------------------------------------
-// EXPEDIA
-// Fixed: Use expedia.de (German) to force EUR
-// --------------------------------------------------
+// EXPEDIA — .de = EUR (confirmed working from screenshots!)
 function buildExpediaUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -368,34 +325,29 @@ function buildExpediaUrl(p) {
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
   var cabin  = {
-    economy:         'economy',
-    premium_economy: 'premiumeconomy',
-    business:        'business',
-    first:           'first'
+    economy:'economy', premium_economy:'premiumeconomy',
+    business:'business', first:'first'
   }[p.cabinClass] || 'economy';
 
-  // Use expedia.de for EUR pricing
-  var base = 'https://www.expedia.de/Flights-Search?';
-
-  var params = 'trip=' + (p.tripType === 'roundtrip' ? 'roundtrip' : 'oneway') +
-               '&leg1=from:' + from + ',to:' + to + ',departure:' + dep + 'TANYT' +
-               '&passengers=adults:' + adults + ',children:' + kids +
+  var params = 'trip=' +
+               (p.tripType === 'roundtrip' ? 'roundtrip' : 'oneway') +
+               '&leg1=from:' + from + ',to:' + to +
+               ',departure:' + dep + 'TANYT' +
+               '&passengers=adults:' + adults +
+               ',children:' + kids +
                ',seniors:0,infantinlap:0' +
                '&options=cabinclass:' + cabin +
-               '&mode=search' +
-               '&currency=EUR';
+               '&mode=search&currency=EUR';
 
   if (p.tripType === 'roundtrip' && ret) {
-    params += '&leg2=from:' + to + ',to:' + from + ',departure:' + ret + 'TANYT';
+    params += '&leg2=from:' + to + ',to:' + from +
+              ',departure:' + ret + 'TANYT';
   }
 
-  return base + params;
+  return 'https://www.expedia.de/Flights-Search?' + params;
 }
 
-// --------------------------------------------------
-// MOMONDO
-// Fixed: Use momondo.de (German) for EUR
-// --------------------------------------------------
+// MOMONDO — .de = EUR (confirmed working from screenshots!)
 function buildMomondoUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -403,217 +355,161 @@ function buildMomondoUrl(p) {
   var to     = (p.destination || '').toUpperCase();
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
-  var cabin  = {economy:'e', premium_economy:'pe', business:'b', first:'f'}[p.cabinClass] || 'e';
-
-  // Use momondo.de for EUR pricing
-  var base = 'https://www.momondo.de/flight-search/';
+  var cabin  = {
+    economy:'e', premium_economy:'pe',
+    business:'b', first:'f'
+  }[p.cabinClass] || 'e';
 
   var qs = '?currency=EUR&cabin=' + cabin +
            '&children=' + kids +
            '&lang=de&sort=bestflight_a';
 
-  if (p.tripType === 'roundtrip' && ret) {
-    return base + from + '-' + to + '/' + dep + '/' + ret + '/' + adults + 'adults' + qs;
-  }
-  return base + from + '-' + to + '/' + dep + '/oneway/' + adults + 'adults' + qs;
-}
-
-// --------------------------------------------------
-// WIZZ AIR
-// --------------------------------------------------
-function buildWizzairUrl(p) {
-  var from   = (p.origin      || '').toUpperCase();
-  var to     = (p.destination || '').toUpperCase();
-  var dep    = p.departDate || '';
-  var ret    = p.returnDate || '';
-  var adults = parseInt(p.adults)   || 1;
-  var kids   = parseInt(p.children) || 0;
-
-  var params = 'departureStation=' + from +
-               '&arrivalStation='  + to +
-               '&departureDate='   + dep +
-               '&adults='          + adults +
-               '&children='        + kids +
-               '&currency=EUR';
+  if (p.directOnly) { qs += '&fs=stops=0'; }
 
   if (p.tripType === 'roundtrip' && ret) {
-    params += '&returnDate=' + ret + '&flightType=return';
-  } else {
-    params += '&flightType=oneway';
+    return 'https://www.momondo.de/flight-search/' +
+           from + '-' + to + '/' +
+           dep + '/' + ret + '/' +
+           adults + 'adults' + qs;
   }
-
-  return 'https://wizzair.com/en-gb/flights/search?' + params;
+  return 'https://www.momondo.de/flight-search/' +
+         from + '-' + to + '/' +
+         dep + '/oneway/' + adults + 'adults' + qs;
 }
 
-// --------------------------------------------------
-// RYANAIR
-// --------------------------------------------------
-function buildRyanairUrl(p) {
-  var from   = (p.origin      || '').toUpperCase();
-  var to     = (p.destination || '').toUpperCase();
-  var dep    = p.departDate || '';
-  var ret    = p.returnDate || '';
-  var adults = parseInt(p.adults)   || 1;
-  var kids   = parseInt(p.children) || 0;
-
-  var params = 'adults='           + adults +
-               '&teens=0&children='+ kids + '&infants=0' +
-               '&dateOut='         + dep +
-               '&originIata='      + from +
-               '&destinationIata=' + to +
-               '&isReturn='        + (p.tripType === 'roundtrip' ? 'true' : 'false') +
-               '&currency=EUR' +
-               '&tpAdults='        + adults +
-               '&tpTeens=0&tpChildren=' + kids + '&tpInfants=0' +
-               '&tpStartDate='     + dep;
-
-  if (p.tripType === 'roundtrip' && ret) {
-    params += '&dateIn=' + ret + '&tpEndDate=' + ret;
-  }
-
-  return 'https://www.ryanair.com/en/en/trip/flights/select?' + params;
-}
-
-// --------------------------------------------------
-// EASYJET
-// --------------------------------------------------
-function buildEasyjetUrl(p) {
-  var from   = (p.origin      || '').toUpperCase();
-  var to     = (p.destination || '').toUpperCase();
-  var dep    = p.departDate || '';
-  var ret    = p.returnDate || '';
-  var adults = parseInt(p.adults)   || 1;
-  var kids   = parseInt(p.children) || 0;
-  var type   = p.tripType === 'roundtrip' ? 'return' : 'oneway';
-
-  var params = 'origin='      + from +
-               '&destination='+ to +
-               '&departDate=' + dep +
-               '&adult='      + adults +
-               '&child='      + kids +
-               '&infant=0' +
-               '&type='       + type;
-
-  if (p.tripType === 'roundtrip' && ret) {
-    params += '&returnDate=' + ret;
-  }
-
-  return 'https://www.easyjet.com/en/cheap-flights-search?' + params;
-}
-
-// --------------------------------------------------
-// LUFTHANSA
-// --------------------------------------------------
-function buildLufthansaUrl(p) {
-  var from   = (p.origin      || '').toUpperCase();
-  var to     = (p.destination || '').toUpperCase();
-  var dep    = p.departDate || '';
-  var ret    = p.returnDate || '';
-  var adults = parseInt(p.adults)   || 1;
-  var kids   = parseInt(p.children) || 0;
-  var cabin  = {economy:'Y', premium_economy:'M', business:'C', first:'F'}[p.cabinClass] || 'Y';
-  var type   = p.tripType === 'roundtrip' ? 'ROUND_TRIP' : 'ONE_WAY';
-
-  var params = 'origin='      + from +
-               '&destination='+ to +
-               '&outwardDate='+ dep +
-               '&adults='     + adults +
-               '&children='   + kids +
-               '&infants=0' +
-               '&cabinClass=' + cabin +
-               '&tripType='   + type +
-               '&currency=EUR';
-
-  if (p.tripType === 'roundtrip' && ret) {
-    params += '&returnDate=' + ret;
-  }
-
-  return 'https://www.lufthansa.com/de/en/flight-search?' + params;
-}
-
-// --------------------------------------------------
-// EMIRATES
-// --------------------------------------------------
-function buildEmiratesUrl(p) {
-  var from   = (p.origin      || '').toUpperCase();
-  var to     = (p.destination || '').toUpperCase();
-  var dep    = p.departDate || '';
-  var ret    = p.returnDate || '';
-  var adults = parseInt(p.adults)   || 1;
-  var kids   = parseInt(p.children) || 0;
-  var cabin  = {economy:'Y', premium_economy:'W', business:'J', first:'F'}[p.cabinClass] || 'Y';
-
-  var params = 'type='    + (p.tripType === 'roundtrip' ? 'ROUND_TRIP' : 'ONE_WAY') +
-               '&from='   + from +
-               '&to='     + to +
-               '&depart=' + dep +
-               '&adult='  + adults +
-               '&child='  + kids +
-               '&infant=0' +
-               '&cabin='  + cabin +
-               '&currency=EUR';
-
-  if (p.tripType === 'roundtrip' && ret) {
-    params += '&return=' + ret;
-  }
-
-  return 'https://www.emirates.com/english/book-and-manage/book-flights/?' + params;
-}
-
-// --------------------------------------------------
-// TRIP.COM
-// --------------------------------------------------
-function buildTripUrl(p) {
-  var from   = (p.origin      || '').toUpperCase();
-  var to     = (p.destination || '').toUpperCase();
-  var dep    = p.departDate || '';
-  var ret    = p.returnDate || '';
-  var adults = parseInt(p.adults)   || 1;
-  var kids   = parseInt(p.children) || 0;
-  var type   = p.tripType === 'roundtrip' ? 'RT' : 'OW';
-
-  var params = 'dcity='     + from +
-               '&acity='    + to +
-               '&ddate='    + dep +
-               '&adult='    + adults +
-               '&child='    + kids +
-               '&infant=0' +
-               '&cabin=Y' +
-               '&curr=EUR' +
-               '&triptype=' + type;
-
-  if (p.tripType === 'roundtrip' && ret) {
-    params += '&rdate=' + ret;
-  }
-
-  return 'https://uk.trip.com/flights/onlineflight?' + params;
-}
-
-// --------------------------------------------------
-// GOOGLE FLIGHTS
-// Note: Google INTENTIONALLY blocks date/passenger
-// pre-filling from external URLs. Airports pre-fill.
-// Users must set dates/passengers manually.
-// --------------------------------------------------
+// GOOGLE FLIGHTS — search query format
+// Only origin pre-fills reliably
 function buildGoogleFlightsUrl(p) {
   var from = (p.origin      || '').toUpperCase();
   var to   = (p.destination || '').toUpperCase();
-  var dep  = p.departDate || '';
-  var ret  = p.returnDate || '';
+  var dep  = p.departDate   || '';
+  var ret  = p.returnDate   || '';
 
-  // Hash format — best attempt at passing dates
-  // Google may still ignore them
-  if (p.tripType === 'roundtrip' && ret) {
-    return 'https://www.google.com/travel/flights?hl=en&curr=EUR' +
-           '#flt=' + from + '.' + to + '.' + dep +
-           '*' + to + '.' + from + '.' + ret +
-           ';c:EUR;e:1;sd:1;t:f';
-  }
-  return 'https://www.google.com/travel/flights?hl=en&curr=EUR' +
-         '#flt=' + from + '.' + to + '.' + dep +
-         ';c:EUR;e:1;sd:1;t:f';
+  var query = 'flights+from+' + from + '+to+' + to;
+  if (dep) { query += '+on+' + dep; }
+
+  return 'https://www.google.com/travel/flights?q=' +
+         query + '&hl=en&curr=EUR';
 }
 
+// CLEARTRIP — India specialist
+function buildCleartripUrl(p) {
+  var dep    = (p.departDate || '').replace(/-/g, '');
+  var ret    = (p.returnDate || '').replace(/-/g, '');
+  var from   = (p.origin      || '').toUpperCase();
+  var to     = (p.destination || '').toUpperCase();
+  var adults = parseInt(p.adults)   || 1;
+  var kids   = parseInt(p.children) || 0;
+
+  var params = 'origin='       + from +
+               '&destination=' + to +
+               '&depart_date=' + dep +
+               '&adults='      + adults +
+               '&childs='      + kids +
+               '&infants=0' +
+               '&class=Economy' +
+               '&intl=y';
+
+  if (p.tripType === 'roundtrip' && ret) {
+    params += '&return_date=' + ret +
+              '&journey_type=return';
+  } else {
+    params += '&journey_type=one-way';
+  }
+
+  return 'https://www.cleartrip.com/flights/results?' + params;
+}
+
+// MAKEMYTRIP — India No.1
+function buildMakeMyTripUrl(p) {
+  var from   = (p.origin      || '').toUpperCase();
+  var to     = (p.destination || '').toUpperCase();
+  var dep    = p.departDate || '';
+  var ret    = p.returnDate || '';
+  var adults = parseInt(p.adults)   || 1;
+  var kids   = parseInt(p.children) || 0;
+
+  // MMT needs DD/MM/YYYY format
+  function toMMT(d) {
+    if (!d) return '';
+    var parts = d.split('-');
+    if (parts.length !== 3) return d;
+    return parts[2] + '/' + parts[1] + '/' + parts[0];
+  }
+
+  var tripType = p.tripType === 'roundtrip' ? 'R' : 'O';
+  var itinerary = from + '-' + to + '-' + toMMT(dep);
+
+  if (p.tripType === 'roundtrip' && ret) {
+    itinerary += '_' + to + '-' + from + '-' + toMMT(ret);
+  }
+
+  var params = 'tripType='   + tripType +
+               '&itinerary=' + itinerary +
+               '&paxType=A-' + adults +
+               '_C-' + kids + '_I-0' +
+               '&cabinClass=E' +
+               '&ccde=IN&lang=eng';
+
+  return 'https://www.makemytrip.com/flights/international/listing?' +
+         params;
+}
+
+// JETRADAR — searches 726 airlines
+function buildJetradarUrl(p) {
+  var from   = (p.origin      || '').toUpperCase();
+  var to     = (p.destination || '').toUpperCase();
+  var dep    = p.departDate || '';
+  var ret    = p.returnDate || '';
+  var adults = parseInt(p.adults)   || 1;
+  var kids   = parseInt(p.children) || 0;
+
+  // Jetradar date format: YYYY-MM-DD
+  var params = 'origin='       + from +
+               '&destination=' + to +
+               '&depart_date=' + dep +
+               '&adults='      + adults +
+               '&children='    + kids +
+               '&infants=0' +
+               '&currency=EUR' +
+               '&locale=en';
+
+  if (p.tripType === 'roundtrip' && ret) {
+    params += '&return_date=' + ret + '&trip_class=0';
+  } else {
+    params += '&trip_class=0';
+  }
+
+  return 'https://www.jetradar.com/flights/?' + params;
+}
+
+// WEGO — Asia/Middle East specialist
+function buildWegoUrl(p) {
+  var from   = (p.origin      || '').toUpperCase();
+  var to     = (p.destination || '').toUpperCase();
+  var dep    = p.departDate || '';
+  var ret    = p.returnDate || '';
+  var adults = parseInt(p.adults)   || 1;
+  var kids   = parseInt(p.children) || 0;
+
+  var params = 'from='    + from +
+               '&to='     + to +
+               '&dep='    + dep +
+               '&adults=' + adults +
+               '&children='+ kids +
+               '&infants=0' +
+               '&currency=EUR' +
+               '&cabin=economy' +
+               '&lang=en';
+
+  if (p.tripType === 'roundtrip' && ret) {
+    params += '&ret=' + ret + '&trip=roundtrip';
+  } else {
+    params += '&trip=oneway';
+  }
+
+  return 'https://www.wego.com/flights?' + params;
+}
 // =============================================
 // DATE HELPERS
 // =============================================
