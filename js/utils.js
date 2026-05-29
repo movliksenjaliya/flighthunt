@@ -1,6 +1,4 @@
-// =============================================
-// UTILS.JS - All sites forced to .de = EUR
-// =============================================
+// v3.0 - forced .de domains - 2025
 
 const AIRPORTS = [
   { iata:'BER', name:'Berlin Brandenburg',           city:'Berlin',        country:'Germany'     },
