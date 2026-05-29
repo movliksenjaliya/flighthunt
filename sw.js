@@ -3,7 +3,7 @@
 // Offline support + cache management
 // =============================================
 
-const CACHE_NAME = 'flighthunt-v4.0';
+const CACHE_NAME = 'flighthunt-v5.0';
 const STATIC_ASSETS  = [
   '/',
   '/index.html',
