@@ -1,5 +1,5 @@
 // =============================================
-// UTILS.JS - Final Clean Version
+// UTILS.JS - All sites forced to .de = EUR
 // =============================================
 
 const AIRPORTS = [
@@ -138,7 +138,7 @@ const POPULAR_ROUTES = [
 ];
 
 // =============================================
-// SEARCH SITES
+// SEARCH SITES — all .de = EUR guaranteed
 // =============================================
 const SEARCH_SITES = [
   {
@@ -147,7 +147,7 @@ const SEARCH_SITES = [
     icon:  '🌐',
     color: '#0770e3',
     note:  '✅ Route + Dates + Passengers + EUR',
-    desc:  'Best overall aggregator. Fully pre-filled.',
+    desc:  'Best overall aggregator. Fully pre-filled from your search.',
     buildUrl: buildSkyscannerUrl,
   },
   {
@@ -234,9 +234,10 @@ const SEARCH_SITES = [
 ];
 
 // =============================================
-// URL BUILDERS — English + EUR
+// URL BUILDERS — All .de = EUR guaranteed
 // =============================================
 
+// SKYSCANNER — skyscanner.de
 function buildSkyscannerUrl(p) {
   var dep    = (p.departDate || '').replace(/-/g, '');
   var ret    = (p.returnDate || '').replace(/-/g, '');
@@ -244,16 +245,32 @@ function buildSkyscannerUrl(p) {
   var to     = (p.destination || '').toLowerCase();
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
-  var cabin  = { economy:'economy', premium_economy:'premiumeconomy', business:'business', first:'first' }[p.cabinClass] || 'economy';
-  var qs = 'adults=' + adults + '&children=' + kids + '&adultsv2=' + adults +
-           '&childrenv2=&infants=0&cabinclass=' + cabin +
-           '&currency=EUR&locale=en-GB&market=DE';
+  var cabin  = {
+    economy:'economy', premium_economy:'premiumeconomy',
+    business:'business', first:'first'
+  }[p.cabinClass] || 'economy';
+
+  var qs = 'adults='     + adults +
+           '&children='  + kids +
+           '&adultsv2='  + adults +
+           '&childrenv2=&infants=0' +
+           '&cabinclass='+ cabin +
+           '&currency=EUR' +
+           '&locale=de-DE' +
+           '&market=DE';
+
   if (p.directOnly) { qs += '&stops=!2,!1'; }
-  var base = 'https://www.skyscanner.net/transport/flights/' + from + '/' + to + '/';
-  if (p.tripType === 'roundtrip' && ret) return base + dep + '/' + ret + '/?' + qs;
+
+  var base = 'https://www.skyscanner.de/transport/flights/' +
+             from + '/' + to + '/';
+
+  if (p.tripType === 'roundtrip' && ret) {
+    return base + dep + '/' + ret + '/?' + qs;
+  }
   return base + dep + '/?' + qs;
 }
 
+// KAYAK — kayak.de
 function buildKayakUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -261,17 +278,29 @@ function buildKayakUrl(p) {
   var to     = (p.destination || '').toUpperCase();
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
-  var cabin  = { economy:'e', premium_economy:'pe', business:'b', first:'f' }[p.cabinClass] || 'e';
-  var pax    = adults + 'adults';
+  var cabin  = {
+    economy:'e', premium_economy:'pe',
+    business:'b', first:'f'
+  }[p.cabinClass] || 'e';
+
+  var pax = adults + 'adults';
   for (var i = 0; i < kids; i++) { pax += '-child10'; }
+
   var qs = '?currency=EUR&sort=price_a';
   if (p.directOnly) { qs += '&fs=stops=0'; }
+
   if (p.tripType === 'roundtrip' && ret) {
-    return 'https://www.kayak.com/flights/' + from + '-' + to + '/' + dep + '/' + ret + '/' + pax + '/' + cabin + qs;
+    return 'https://www.kayak.de/flights/' +
+           from + '-' + to + '/' +
+           dep + '/' + ret + '/' +
+           pax + '/' + cabin + qs;
   }
-  return 'https://www.kayak.com/flights/' + from + '-' + to + '/' + dep + '/' + pax + '/' + cabin + qs;
+  return 'https://www.kayak.de/flights/' +
+         from + '-' + to + '/' +
+         dep + '/' + pax + '/' + cabin + qs;
 }
 
+// EXPEDIA — expedia.de
 function buildExpediaUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -279,17 +308,33 @@ function buildExpediaUrl(p) {
   var to     = (p.destination || '').toUpperCase();
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
-  var cabin  = { economy:'economy', premium_economy:'premiumeconomy', business:'business', first:'first' }[p.cabinClass] || 'economy';
-  var params = 'trip=' + (p.tripType === 'roundtrip' ? 'roundtrip' : 'oneway') +
-               '&leg1=from:' + from + ',to:' + to + ',departure:' + dep + 'TANYT' +
-               '&passengers=adults:' + adults + ',children:' + kids + ',seniors:0,infantinlap:0' +
-               '&options=cabinclass:' + cabin + '&mode=search&currency=EUR';
+  var cabin  = {
+    economy:'economy', premium_economy:'premiumeconomy',
+    business:'business', first:'first'
+  }[p.cabinClass] || 'economy';
+
+  var params = 'trip=' +
+               (p.tripType === 'roundtrip' ? 'roundtrip' : 'oneway') +
+               '&leg1=from:' + from +
+               ',to:'        + to +
+               ',departure:' + dep + 'TANYT' +
+               '&passengers=adults:' + adults +
+               ',children:'  + kids +
+               ',seniors:0,infantinlap:0' +
+               '&options=cabinclass:' + cabin +
+               '&mode=search' +
+               '&currency=EUR';
+
   if (p.tripType === 'roundtrip' && ret) {
-    params += '&leg2=from:' + to + ',to:' + from + ',departure:' + ret + 'TANYT';
+    params += '&leg2=from:' + to +
+              ',to:'        + from +
+              ',departure:' + ret + 'TANYT';
   }
-  return 'https://www.expedia.com/Flights-Search?' + params;
+
+  return 'https://www.expedia.de/Flights-Search?' + params;
 }
 
+// MOMONDO — momondo.de (confirmed EUR working)
 function buildMomondoUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -297,22 +342,42 @@ function buildMomondoUrl(p) {
   var to     = (p.destination || '').toUpperCase();
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
-  var cabin  = { economy:'e', premium_economy:'pe', business:'b', first:'f' }[p.cabinClass] || 'e';
-  var qs = '?currency=EUR&cabin=' + cabin + '&children=' + kids + '&locale=en-US&sort=bestflight_a';
+  var cabin  = {
+    economy:'e', premium_economy:'pe',
+    business:'b', first:'f'
+  }[p.cabinClass] || 'e';
+
+  var qs = '?currency=EUR' +
+           '&cabin='       + cabin +
+           '&children='    + kids +
+           '&lang=de' +
+           '&sort=bestflight_a';
+
   if (p.directOnly) { qs += '&fs=stops=0'; }
+
   if (p.tripType === 'roundtrip' && ret) {
-    return 'https://www.momondo.com/flight-search/' + from + '-' + to + '/' + dep + '/' + ret + '/' + adults + 'adults' + qs;
+    return 'https://www.momondo.de/flight-search/' +
+           from + '-' + to + '/' +
+           dep + '/' + ret + '/' +
+           adults + 'adults' + qs;
   }
-  return 'https://www.momondo.com/flight-search/' + from + '-' + to + '/' + dep + '/oneway/' + adults + 'adults' + qs;
+  return 'https://www.momondo.de/flight-search/' +
+         from + '-' + to + '/' +
+         dep + '/oneway/' + adults + 'adults' + qs;
 }
 
+// GOOGLE FLIGHTS — always EUR via curr=EUR
 function buildGoogleFlightsUrl(p) {
   var from = (p.origin      || '').toUpperCase();
   var to   = (p.destination || '').toUpperCase();
   var dep  = p.departDate   || '';
-  return 'https://www.google.com/travel/flights?q=flights+from+' + from + '+to+' + to + '+on+' + dep + '&hl=en&curr=EUR';
+
+  return 'https://www.google.de/travel/flights?q=flights+from+' +
+         from + '+to+' + to + '+on+' + dep +
+         '&hl=de&curr=EUR';
 }
 
+// BOOKING.COM — booking.de
 function buildBookingUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -320,16 +385,32 @@ function buildBookingUrl(p) {
   var to     = (p.destination || '').toUpperCase();
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
-  var cabin  = { economy:'ECONOMY', premium_economy:'PREMIUM_ECONOMY', business:'BUSINESS', first:'FIRST' }[p.cabinClass] || 'ECONOMY';
-  var type   = p.tripType === 'roundtrip' ? 'ROUNDTRIP' : 'ONEWAY';
-  var params = 'type=' + type + '&from=' + from + '&to=' + to + '&fromDate=' + dep +
-               '&adults=' + adults + '&children=' + kids +
-               '&cabinClass=' + cabin + '&currency=EUR&lang=en-gb';
-  if (p.tripType === 'roundtrip' && ret) { params += '&toDate=' + ret; }
+  var cabin  = {
+    economy:'ECONOMY', premium_economy:'PREMIUM_ECONOMY',
+    business:'BUSINESS', first:'FIRST'
+  }[p.cabinClass] || 'ECONOMY';
+  var type = p.tripType === 'roundtrip' ? 'ROUNDTRIP' : 'ONEWAY';
+
+  var params = 'type='        + type +
+               '&from='       + from +
+               '&to='         + to +
+               '&fromDate='   + dep +
+               '&adults='     + adults +
+               '&children='   + kids +
+               '&cabinClass=' + cabin +
+               '&currency=EUR' +
+               '&lang=de';
+
+  if (p.tripType === 'roundtrip' && ret) {
+    params += '&toDate=' + ret;
+  }
   if (p.directOnly) { params += '&stops=NONSTOP'; }
-  return 'https://flights.booking.com/flights/' + from + '-' + to + '/?' + params;
+
+  return 'https://flights.booking.com/flights/' +
+         from + '-' + to + '/?' + params;
 }
 
+// OPODO — opodo.de
 function buildOpodoUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -337,15 +418,29 @@ function buildOpodoUrl(p) {
   var to     = (p.destination || '').toUpperCase();
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
-  var cabin  = { economy:'Y', premium_economy:'W', business:'C', first:'F' }[p.cabinClass] || 'Y';
-  var params = 'adults=' + adults + '&children=' + kids + '&infants=0' +
-               '&from=' + from + '&to=' + to + '&cabin=' + cabin +
-               '&type=' + (p.tripType === 'roundtrip' ? 'R' : 'OW') +
-               '&outbound=' + dep + '&currency=EUR&lang=en';
-  if (p.tripType === 'roundtrip' && ret) { params += '&inbound=' + ret; }
-  return 'https://www.opodo.com/flights/?' + params;
+  var cabin  = {
+    economy:'Y', premium_economy:'W',
+    business:'C', first:'F'
+  }[p.cabinClass] || 'Y';
+
+  var params = 'adults='     + adults +
+               '&children='  + kids +
+               '&infants=0' +
+               '&from='      + from +
+               '&to='        + to +
+               '&cabin='     + cabin +
+               '&type='      + (p.tripType === 'roundtrip' ? 'R' : 'OW') +
+               '&outbound='  + dep +
+               '&currency=EUR';
+
+  if (p.tripType === 'roundtrip' && ret) {
+    params += '&inbound=' + ret;
+  }
+
+  return 'https://www.opodo.de/flights/?' + params;
 }
 
+// LASTMINUTE — lastminute.de
 function buildLastminuteUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -353,15 +448,29 @@ function buildLastminuteUrl(p) {
   var to     = (p.destination || '').toUpperCase();
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
-  var cabin  = { economy:'eco', premium_economy:'pre', business:'bus', first:'fir' }[p.cabinClass] || 'eco';
-  var params = 'adults=' + adults + '&children=' + kids + '&infants=0' +
-               '&from=' + from + '&to=' + to + '&class=' + cabin +
-               '&type=' + (p.tripType === 'roundtrip' ? 'rt' : 'ow') +
-               '&departure=' + dep + '&currency=EUR&lang=en';
-  if (p.tripType === 'roundtrip' && ret) { params += '&return=' + ret; }
-  return 'https://www.lastminute.com/flights/?' + params;
+  var cabin  = {
+    economy:'eco', premium_economy:'pre',
+    business:'bus', first:'fir'
+  }[p.cabinClass] || 'eco';
+
+  var params = 'adults='     + adults +
+               '&children='  + kids +
+               '&infants=0' +
+               '&from='      + from +
+               '&to='        + to +
+               '&class='     + cabin +
+               '&type='      + (p.tripType === 'roundtrip' ? 'rt' : 'ow') +
+               '&departure=' + dep +
+               '&currency=EUR';
+
+  if (p.tripType === 'roundtrip' && ret) {
+    params += '&return=' + ret;
+  }
+
+  return 'https://www.lastminute.de/fluege/?' + params;
 }
 
+// EDREAMS — edreams.de
 function buildEdreamsUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -369,24 +478,37 @@ function buildEdreamsUrl(p) {
   var to     = (p.destination || '').toUpperCase();
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
-  var cabin  = { economy:'Y', premium_economy:'W', business:'C', first:'F' }[p.cabinClass] || 'Y';
+  var cabin  = {
+    economy:'Y', premium_economy:'W',
+    business:'C', first:'F'
+  }[p.cabinClass] || 'Y';
+
+  // eDreams uses DD-MM-YYYY
   function toED(d) {
     if (!d) return '';
     var pts = d.split('-');
     return pts[2] + '-' + pts[1] + '-' + pts[0];
   }
-  var params = 'adults=' + adults + '&children=' + kids + '&infants=0' +
-               '&from=' + from + '&to=' + to +
-               '&departure=' + toED(dep) + '&cabin=' + cabin +
-               '&currency=EUR&lang=en';
+
+  var params = 'adults='     + adults +
+               '&children='  + kids +
+               '&infants=0' +
+               '&from='      + from +
+               '&to='        + to +
+               '&departure=' + toED(dep) +
+               '&cabin='     + cabin +
+               '&currency=EUR';
+
   if (p.tripType === 'roundtrip' && ret) {
     params += '&return=' + toED(ret) + '&type=RT';
   } else {
     params += '&type=OW';
   }
-  return 'https://www.edreams.com/flights/?' + params;
+
+  return 'https://www.edreams.de/flights/?' + params;
 }
 
+// BRAVOFLY — bravofly.de
 function buildBravoflyUrl(p) {
   var dep    = p.departDate || '';
   var ret    = p.returnDate || '';
@@ -394,20 +516,29 @@ function buildBravoflyUrl(p) {
   var to     = (p.destination || '').toUpperCase();
   var adults = parseInt(p.adults)   || 1;
   var kids   = parseInt(p.children) || 0;
+
+  // Bravofly uses DD/MM/YYYY
   function toBF(d) {
     if (!d) return '';
     var pts = d.split('-');
     return pts[2] + '/' + pts[1] + '/' + pts[0];
   }
-  var params = 'adults=' + adults + '&children=' + kids + '&infants=0' +
-               '&from=' + from + '&to=' + to +
-               '&departure=' + toBF(dep) + '&currency=EUR&lang=en';
+
+  var params = 'adults='     + adults +
+               '&children='  + kids +
+               '&infants=0' +
+               '&from='      + from +
+               '&to='        + to +
+               '&departure=' + toBF(dep) +
+               '&currency=EUR';
+
   if (p.tripType === 'roundtrip' && ret) {
     params += '&return=' + toBF(ret) + '&type=RT';
   } else {
     params += '&type=OW';
   }
-  return 'https://www.bravofly.com/flights/?' + params;
+
+  return 'https://www.bravofly.de/fluege/?' + params;
 }
 
 // =============================================
@@ -424,14 +555,24 @@ function formatDateDisplay(dateStr) {
   if (!dateStr) return '';
   var parts = dateStr.split('-');
   if (parts.length !== 3) return dateStr;
-  var d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-  return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  var d = new Date(
+    parseInt(parts[0]),
+    parseInt(parts[1]) - 1,
+    parseInt(parts[2])
+  );
+  return d.toLocaleDateString('en-GB', {
+    day:'2-digit', month:'short', year:'numeric'
+  });
 }
 
 function addDays(dateStr, days) {
   if (!dateStr) return '';
   var parts = dateStr.split('-');
-  var d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]) + days);
+  var d = new Date(
+    parseInt(parts[0]),
+    parseInt(parts[1]) - 1,
+    parseInt(parts[2]) + days
+  );
   return d.getFullYear() + '-' +
     String(d.getMonth() + 1).padStart(2, '0') + '-' +
     String(d.getDate()).padStart(2, '0');
@@ -446,8 +587,8 @@ function formatDuration(minutes) {
 function minutesToTime(baseTime, addMinutes) {
   var parts = baseTime.split(':');
   var total = parseInt(parts[0]) * 60 + parseInt(parts[1]) + addMinutes;
-  var h = Math.floor(total / 60) % 24;
-  var m = total % 60;
+  var h     = Math.floor(total / 60) % 24;
+  var m     = total % 60;
   return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
 }
 
@@ -461,8 +602,8 @@ function searchAirports(query) {
   return AIRPORTS.filter(function(a) {
     return a.iata.toLowerCase().startsWith(q) ||
            a.city.toLowerCase().startsWith(q) ||
-           a.city.toLowerCase().includes(q) ||
-           a.name.toLowerCase().includes(q) ||
+           a.city.toLowerCase().includes(q)   ||
+           a.name.toLowerCase().includes(q)   ||
            a.country.toLowerCase().startsWith(q);
   }).slice(0, 8);
 }
@@ -481,7 +622,9 @@ function getAirportByIATA(iata) {
 function formatEUR(amount) {
   if (amount === null || amount === undefined) return '—';
   return new Intl.NumberFormat('de-DE', {
-    style: 'currency', currency: 'EUR', maximumFractionDigits: 0
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0
   }).format(amount);
 }
 
@@ -498,7 +641,8 @@ function openPrivateBookingTab(url) {
 function clearAppCookies() {
   document.cookie.split(';').forEach(function(c) {
     var name = c.split('=')[0].trim();
-    document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+    document.cookie = name +
+      '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
   });
   try { sessionStorage.clear(); } catch(e) {}
 }
@@ -516,7 +660,9 @@ var Storage = {
     } catch(e) { return fallback; }
   },
   set: function(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); } catch(e) {}
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch(e) {}
   },
   remove: function(key) {
     try { localStorage.removeItem(key); } catch(e) {}
@@ -531,9 +677,11 @@ function debounce(fn, ms) {
   var timer;
   return function() {
     var args = arguments;
-    var ctx = this;
+    var ctx  = this;
     clearTimeout(timer);
-    timer = setTimeout(function() { fn.apply(ctx, args); }, ms);
+    timer = setTimeout(function() {
+      fn.apply(ctx, args);
+    }, ms);
   };
 }
 
@@ -542,7 +690,9 @@ function generateId() {
 }
 
 function copyToClipboard(text) {
-  if (navigator.clipboard) return navigator.clipboard.writeText(text);
+  if (navigator.clipboard) {
+    return navigator.clipboard.writeText(text);
+  }
   var ta = document.createElement('textarea');
   ta.value = text;
   ta.style.cssText = 'position:fixed;opacity:0';
